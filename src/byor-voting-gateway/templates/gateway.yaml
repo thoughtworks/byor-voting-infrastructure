@@ -1,0 +1,59 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    istio: {{ .Values.gateway }}
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - {{ .Values.hosts.host }}
+    tls:
+      httpsRedirect: true
+  - port:
+      name: https
+      number: 443
+      protocol: HTTPS
+    hosts:
+    - {{ .Values.hosts.host }}  
+    tls:
+      mode: SIMPLE
+      privateKey: /etc/istio/ingressgateway-certs/tls.key
+      serverCertificate: /etc/istio/ingressgateway-certs/tls.crt
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  hosts:
+    - "*"
+  gateways:
+  - {{ .Values.name }}
+  http:
+  - match:
+    - uri:
+        prefix: /api/
+    rewrite:
+        uri: /
+    route:
+    - destination:
+        host: {{ .Values.destinationApp }}
+        port:
+          number: 3000
+  - match:
+    - uri:
+        exact: /login
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: webapp
+        port:
+          number: 80

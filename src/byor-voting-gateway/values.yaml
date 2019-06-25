@@ -1,0 +1,6 @@
+name: byor-gateway
+namespace: byor-ns
+gateway: ingressgateway
+hosts:
+  host: byor.martjanplanet.com
+destinationApp: backendapp

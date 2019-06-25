@@ -1,0 +1,16 @@
+dependencies:
+  - name: byor-voting-db
+    repository: https://raw.githubusercontent.com/thoughtworks/byor-voting-infrastructure/master/charts
+    version: 0.1.0
+  - name: byor-voting-server
+    repository: https://raw.githubusercontent.com/thoughtworks/byor-voting-server/master/charts
+    version: 0.1.0
+  - name: byor-voting-web-app
+    repository: https://raw.githubusercontent.com/thoughtworks/byor-voting-web-app/master/charts
+    version: 0.1.0
+  - name: byor-voting-gateway
+    repository: https://raw.githubusercontent.com/thoughtworks/byor-voting-infrastructure/master/charts
+    version: 0.1.0
+  - name: byor-voting-cert
+    repository: https://raw.githubusercontent.com/thoughtworks/byor-voting-infrastructure/master/charts
+    version: 0.1.0

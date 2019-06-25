@@ -1,0 +1,39 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: webapp
+  namespace: byor-ns
+spec:
+  selector:
+    matchLabels:
+      app: webapp
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: webapp
+        image: byoritaly/byor-app:3.6.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        env:
+        - name: BACKEND_SERVICE_URL
+          value: /api/
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: byor-ns
+  name: webapp
+  labels:
+    app: webapp
+    service: webapp
+spec:
+  selector:
+    app: webapp
+  ports:
+  - name: http
+    port: 80

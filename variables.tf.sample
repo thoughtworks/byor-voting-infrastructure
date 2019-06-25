@@ -1,0 +1,86 @@
+variable "name"  {                                       
+        default = "byor"
+        }
+variable "terraform_state_bucket_name"  {                                       
+        default = "byor-terraform-state-storage"
+        }
+variable "cidr_block"           { 
+    default     = "172.16.0.0/16"           
+    description = "CIDR block for VPC" 
+    }
+variable "tenancy"              { 
+    default     = "default"               
+    }
+variable "AZs"                  { 
+    default     = "a,b"                 
+    description = "Availability Zone" 
+    }
+variable "enable_nat_gw"        { 
+    default     = true                    
+    description = "Create NAT Gateway" 
+    }
+variable "allow_all_ACL"        { 
+    default     = true                    
+    description = "rule to allow all traffic" 
+    }
+variable "eks_version" {
+  default     = "1.12"
+  description = "Kubernetes version to use for the cluster."
+}
+
+variable "key_pair" {
+  default     = "<keypair name>"
+  description = "Adds an EC2 Key Pair to the cluster nodes."
+}
+
+variable "ssh_cidr" {
+  default     = "172.16.0.0/16"
+  description = "The CIDR blocks from which to allow incoming ssh connections to the EKS nodes."
+}
+
+variable "enable_kubectl" {
+  default     = true
+  description = "When enabled, it will merge the cluster's configuration with the one located in ~/.kube/config"
+}
+
+variable "enable_dashboard" {
+  default     = true
+  description = "When enabled, it will install the Kubernetes Dashboard"
+}
+
+############################################# Node variables ##############################################
+
+variable "node_ami_id" {
+  default     = "<AMI-ID>"
+  description = "AMI id for the EKS node"
+}
+
+variable "node_ami_lookup" {
+  default     = "eks-node*"
+  description = "AMI lookup name for the EKS node"
+}
+
+variable "node_instance_type" {
+  default     = "t2.medium"
+  description = "Eks node Instance type"
+}
+
+variable "eks_node_min_size" {
+  default     = 2
+  description = "Minimum size of the eks node AutoScaling Group"
+}
+
+variable "eks_node_max_size" {
+  default     = 2
+  description = "Maximum size of the eks node AutoScaling Group"
+}
+
+variable "eks_node_user_data" {
+  default     = ""
+  description = "user data used when bootstrapping the EC2 instance"
+}
+
+variable "eks_node_bootstrap_arguments" {
+  default     = ""
+  description = "Additional arguments when bootstrapping the EKS node"
+}

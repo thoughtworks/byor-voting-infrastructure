@@ -1,0 +1,43 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: backendapp
+  namespace: byor-ns
+spec:
+  selector:
+    matchLabels:
+      app: backendapp
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backendapp
+    spec:
+      containers:
+      - name: backendapp
+        image: byoritaly/byor-backend:3.6.2
+        ports:
+          - containerPort: 3000
+        env:
+        - name: MONGO_DB_NAME
+          value: byorDev
+        - name: MONGO_URI
+          value: mongodb://mongo/
+        - name: MONGO_URI_ADMIN
+          value: mongodb://mongo/
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: byor-ns
+  name: backendapp
+  labels:
+    app: backendapp
+    service: backendapp
+spec:
+  ports:
+  - port: 3000
+    targetPort: 3000
+  selector:
+    app: backendapp
+---

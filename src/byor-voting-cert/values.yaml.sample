@@ -1,0 +1,23 @@
+name: letsencrypt-staging
+namespace: istio-system
+
+letsencrypt:
+  Url: https://acme-staging-v02.api.letsencrypt.org/directory #Staging  # Production URL  https://acme-v02.api.letsencrypt.org/directory
+email: r.senthilreddy@gmail.com
+dnsProvider: aws-route53
+awsAccessKeyID: "<awsAccessKeyID>"
+awsRegion: eu-west-1
+secretAccessKeySecretRef: 
+  name: secret-access-key  
+
+certificate:
+  name: byor-gateway-certs
+  namespace: istio-system
+  dnsProvider: aws-route53
+  commonName: "byor.martjanplanet.com"
+  domains: "byor.martjanplanet.com"
+  dnsNames: "byor.martjanplanet.com"
+  
+issuerRef: 
+  secretName: istio-ingressgateway-certs
+  name: letsencrypt-staging

@@ -1,0 +1,12 @@
+.terraform/plugins
+.terraform/modules
+modules/.DS_Store
+output
+terraform.tfstate
+terraform.tfstate.backup
+.DS_Store
+.books*
+
+terraform.tf
+terraform.tfvars
+variables.rf

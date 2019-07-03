@@ -2,16 +2,17 @@
 
 set -e;
 
-read -e -p "Please enter the AWS region [eu-west-1]: " inAwsRegion;
-awsRegion="${inAwsRegion:-eu-west-1}"
+if [ -z "${AWS_REGION}" ]; then read -e -p "Please enter your AWS region [eu-west-1]: " inAwsRegion; else export inAwsRegion=$AWS_REGION; fi
+if [ -z "$1" ]; then read -e -p "Please enter the AWS s3 bucket name: " inAwsS3BucketName; else export inAwsS3BucketName=$1; fi
 
-read -e -p "Please enter the AWS s3 bucket name: " inAwsS3BucketName;
+awsRegion="${inAwsRegion:-eu-west-1}"
 awsS3BucketName="${inAwsS3BucketName}"
 
-bucketstatus=$(aws s3api head-bucket --bucket ${awsS3BucketName} 2>&1)
+set +e;
 
-if echo ${bucketstatus} | grep 'Not Found';
-then
+bucketstatus=$(aws s3api head-bucket --bucket ${awsS3BucketName} 2>&1)
+echo ${bucketstatus}
+if echo ${bucketstatus} | grep 'Not Found'; then
   echo "creating bucket ${awsS3BucketName} ......."
   aws s3 mb s3://${awsS3BucketName} --region "${awsRegion}"
   echo "enabling versioning for ${awsS3BucketName} ......"

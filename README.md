@@ -124,7 +124,7 @@ git clone https://github.com/thoughtworks/byor-voting-server.git
         ```
 1)    deploy the new files with:
         ```shell
-        aws s3 cp dist/ng-build-your-own-radar s3://<your-bucket-name-here>/ --recursive
+        aws s3 cp dist/byor-voting-web-app s3://<your-bucket-name-here>/ --recursive
         ```
 
 ### Updating the application

@@ -15,15 +15,13 @@ spec:
     spec:
       containers:
       - name: backendapp
-        image: byoritaly/byor-backend:3.6.2
+        image: byoritaly/byor-voting-server:3.6.2
         ports:
           - containerPort: 3000
         env:
         - name: MONGO_DB_NAME
           value: byorDev
         - name: MONGO_URI
-          value: mongodb://mongo/
-        - name: MONGO_URI_ADMIN
           value: mongodb://mongo/
 ---
 apiVersion: v1

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: webapp
-        image: byoritaly/byor-app:3.6.1
+        image: byoritaly/byor-voting-web-app:3.6.1
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80

@@ -30,7 +30,8 @@ else
     read -e -p "Please enter your MongoDB password (input hidden): " -s inMongoPassword;
     read -e -p "Please enter your MongoDB admin database [admin]: " inMongoAuthDb;
 
-    cat > "config/byor_${BYOR_ENV}.sh" << EOL
+    echo "--[INFO]: creating environment ${BYOR_ENV} configuration for server...";
+    cat > "${BYOR_VOTING_SERVER_HOME}/config/byor_${BYOR_ENV}.sh" << EOL
 #!/bin/bash
 
 # aws
@@ -84,8 +85,8 @@ if echo ${mongoUri} | grep 'ParameterNotFound'; then
 fi
 if echo ${jwtKeyStatus} | grep 'ParameterNotFound'; then
     echo "--[INFO] no JWT token found, creating a new one..."
-    read -e -p "Please enter the JWT Key: " inJwtKey;
-    aws ssm put-parameter --name "${AWS_SERVICE_STAGE}ByorJwtKey" --type "SecureString" --value $inJwtKey --tags "Key=initiative,Value=${AWS_SERVICE_STAGE}"
+    read -e -p "Please enter the JWT Key (input hidden): " -s inJwtKey;
+    aws ssm put-parameter --name "${AWS_SERVICE_STAGE}ByorJwtKey" --type "SecureString" --value "${inJwtKey}" --tags "Key=initiative,Value=${AWS_SERVICE_STAGE}"
 fi
 
 echo ""

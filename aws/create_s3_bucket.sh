@@ -11,7 +11,7 @@ awsS3BucketName="${inAwsS3BucketName}"
 set +e;
 
 bucketstatus=$(aws s3api head-bucket --bucket ${awsS3BucketName} 2>&1)
-echo ${bucketstatus}
+
 if echo ${bucketstatus} | grep 'Not Found'; then
   echo "creating bucket ${awsS3BucketName} ......."
   aws s3 mb s3://${awsS3BucketName} --region "${awsRegion}"

@@ -26,7 +26,10 @@ fileignoreconfig:
 - filename: src/byor-voting-cert/values.yaml.sample
   checksum: 5ad60eefabea401644721762756ad650b7692fce2eea79e2b532133ae80838a6
   ignore_detectors: []
-
+- filename: aws/deploy_to_lambda.sh
+  checksum: b00d06c7f6891b72da5df2a5bd896b4543083574307188a245632d78960b29cd
+  ignore_detectors: []
+  
 #### the personal token id has to be removed from the following files while migrating to public git repo: ####
 - filename: src/byor-voting-chart/charts/byor-voting-cert-0.1.0.tgz
   checksum: 672897c79b8e3f99124c29bcf6d2347098be50ca00a04ad72dd65f06c8a2da91

@@ -11,7 +11,8 @@ You can find more information about the BYOR-VotingApp in the web-app Github [re
 
 [Deploy BYOR-VotingApp to AWS Lambda](#deploy-byor-votingapp-to-aws-lambda)
 -   [Prerequisites](#prerequisites-1)
--   [Setting up AWS](#setting-up-aws-1)
+-   [Setting up an AWS account](#setting-up-an-aws-account)
+-   [Settting up MongoAtlas account and database](#settting–up-mongoatlas-account-and-database)
 -   [Deploying the application](#deploying-the-application-1)
 -   [Updating the application](#updating-the-application-1)
 
@@ -72,7 +73,7 @@ git clone https://github.com/thoughtworks/byor-voting-server.git
 git clone https://github.com/thoughtworks/byor-voting-infrastructure.git
 ```
 
-### Setup an AWS account
+### Setting up an AWS account
 
 1. sign-in or create a new account in [AWS](https://aws.amazon.com) 
 1. go to `IAM` -> `Users`
@@ -81,7 +82,7 @@ git clone https://github.com/thoughtworks/byor-voting-infrastructure.git
    > keep note of the `Access key ID` and `Secret access key` contained inside the file, they will be asked later by the deployment script.
 
 
-### Setup MongoAtlas account and database
+### Settting up MongoAtlas account and database
 1. sign-in or create a new account in [MongoAtlas](https://www.mongodb.com/cloud/atlas)
 1. create a new database using a lowercase name without spaces (e.g. production) and use `migrations` for the collection name
 1. go to `Database Access`
@@ -92,7 +93,7 @@ git clone https://github.com/thoughtworks/byor-voting-infrastructure.git
 1. go to `Project`, click on `...` and then on `Command Line Tools`
    > keep note of the `--host` parameter value from the `mongorestore` example, it will be asked later by the deployment script
 
-### Deploy to AWS (single installation)
+### Deploying the application
 Run the `deploy_to_lambda.sh` script passing the name of the installation. Use a lowercase name, without spaces  (e.g. production).
 If you want to deploy to several installation targets at once pass them as a comma separated list (e.g. test,production).
 

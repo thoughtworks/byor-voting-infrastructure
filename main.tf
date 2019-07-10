@@ -8,7 +8,7 @@ resource "aws_vpc" "default" {
   instance_tenancy                 = "${var.tenancy}"
   enable_classiclink               = false
 
-  tags {
+  tags = {
     Name = "${var.name}"
   }
 }
@@ -17,7 +17,7 @@ resource "aws_vpc" "default" {
 resource "aws_internet_gateway" "default" {
   vpc_id = "${aws_vpc.default.id}"
 
-  tags {
+  tags = {
     Name = "${var.name}"
   }
 }
@@ -47,7 +47,7 @@ resource "aws_subnet" "public" {
   availability_zone       = "${element(sort(data.aws_availability_zones.available.names), count.index)}"
   count                   = "${length(split(",",var.AZs))}"
 
-  tags {
+  tags = {
     Name = "${var.name}-public-${substr(element(sort(data.aws_availability_zones.available.names), count.index),-1,1)}"
   }
 }
@@ -59,7 +59,7 @@ resource "aws_subnet" "private" {
   availability_zone       = "${element(sort(data.aws_availability_zones.available.names), count.index)}"
   count                   = "${ length(split(",",var.AZs))}"
 
-  tags {
+  tags = {
     Name = "${var.name}-private-${substr(element(sort(data.aws_availability_zones.available.names), count.index),-1,1)}"
   }
 }
@@ -70,7 +70,7 @@ resource "aws_route_table" "public" {
   vpc_id = "${aws_vpc.default.id}"
   count  = "${ length(split(",",var.AZs)) }"
   
-  tags {
+  tags = {
     Name = "${var.name}-public-${substr(element(data.aws_availability_zones.available.names, count.index),-1,1)}"
   }
 }
@@ -79,7 +79,7 @@ resource "aws_route_table" "private" {
   vpc_id = "${aws_vpc.default.id}"
   count  = "${ length(split(",",var.AZs)) }"
   
-  tags {
+  tags = {
     Name = "${var.name}-private-${substr(element(data.aws_availability_zones.available.names, count.index),-1,1)}"
   }
 }
@@ -119,7 +119,7 @@ resource "aws_network_acl" "public" {
   vpc_id     = "${aws_vpc.default.id}"
   subnet_ids = [ "${aws_subnet.public.*.id}" ]
 
-  tags {
+  tags = {
     Name = "${var.name}-public"
   }
 }
@@ -151,7 +151,7 @@ resource "aws_network_acl_rule" "public_egress" {
 resource "aws_network_acl" "private" {
   vpc_id     = "${aws_vpc.default.id}"
   subnet_ids = [ "${aws_subnet.private.*.id}" ]
-  tags {
+  tags = {
     Name = "${var.name}-private"
   }
 }
@@ -185,7 +185,7 @@ resource "aws_network_acl_rule" "private_egress" {
 
 resource "aws_security_group" "private_sg" {
   vpc_id = "${aws_vpc.default.id}"
-  tags {
+  tags = {
     Name = "${var.name}-private_sg"
   }
 }
@@ -234,7 +234,7 @@ resource "aws_security_group_rule" "ingress_http" {
 
 resource "aws_security_group" "public_sg" {
   vpc_id = "${aws_vpc.default.id}"
-  tags {
+  tags = {
     Name = "${var.name}-public_sg"
   }
 }

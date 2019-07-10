@@ -15,7 +15,7 @@ resource "aws_security_group" "cluster" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags {
+  tags = {
     Name = "${var.name}-cluster"
   }
 }
@@ -143,7 +143,7 @@ resource "null_resource" "dashboard" {
   provisioner "local-exec" {
     command = <<COMMAND
       export KUBECONFIG=${path.root}/output/${var.name}/kubeconfig-${var.name} \
-      && kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml \
+      && kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended.yaml \
       && kubectl apply -f https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/heapster.yaml \
       && kubectl apply -f https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/influxdb.yaml \
       && kubectl apply -f https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/rbac/heapster-rbac.yaml \
@@ -153,7 +153,7 @@ resource "null_resource" "dashboard" {
     COMMAND
   }
 
-  triggers {
+  triggers = {
     kubeconfig_rendered = "${local.kubeconfig}"
   }
 

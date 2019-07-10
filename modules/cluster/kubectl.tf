@@ -42,7 +42,7 @@ resource "null_resource" "kubectl" {
     COMMAND
   }
 
-  triggers {
+  triggers = {
     kubeconfig_rendered = "${local.kubeconfig}"
   }
 
@@ -57,7 +57,7 @@ resource "null_resource" "aws_auth" {
     command = "kubectl apply --kubeconfig=${path.root}/output/${var.name}/kubeconfig-${var.name} -f ${path.root}/output/${var.name}/aws-auth.yaml"
   }
 
-  triggers {
+  triggers = {
     kubeconfig_rendered = "${local.kubeconfig}"
   }
 
@@ -72,7 +72,7 @@ resource "null_resource" "tiller_svc" {
     command = "kubectl apply --kubeconfig=${path.root}/output/${var.name}/kubeconfig-${var.name} -f ${path.root}/output/${var.name}/tiller-svc.yaml"
   }
 
-  triggers {
+  triggers = {
     kubeconfig_rendered = "${local.kubeconfig}"
   }
 

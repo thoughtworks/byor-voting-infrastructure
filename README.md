@@ -10,7 +10,7 @@ You can find more information about the BYOR-VotingApp in the web-app Github [re
 [Running BYOR-VotingApp locally](#running-byor-votingapp-locally)
 
 [Deploy BYOR-VotingApp to AWS Lambda](#deploy-byor-votingapp-to-aws-lambda)
--   [Prerequisites](#prerequisites-1)
+-   [Prerequisites](#prerequisites)
 -   [Setting up an AWS account](#setting-up-an-aws-account)
 -   [Settting up MongoAtlas account and database](#settting–up-mongoatlas-account-and-database)
 -   [Deploying the application](#deploying-the-application-1)

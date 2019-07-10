@@ -67,68 +67,62 @@ git clone https://github.com/thoughtworks/byor-voting-web-app.git
 ```shell
 git clone https://github.com/thoughtworks/byor-voting-server.git
 ```
+-    clone **VotingApp [infrastructure]**
+```shell
+git clone https://github.com/thoughtworks/byor-voting-infrastructure.git
+```
 
-### Setting up AWS
+### Setup an AWS account
 
--   create a S3 bucket for deploying the web-app
->   if you want you can use [aws/create_s3_bucket.sh](aws/create_s3_bucket.sh) script to perform the operation
+1. sign-in or create a new account in [AWS](https://aws.amazon.com) 
+1. go to `IAM` -> `Users`
+1. create a new user to be used for deployment
+1. create an `Access key` for the user and download it
+   > keep note of the `Access key ID` and `Secret access key` contained inside the file, they will be asked later by the deployment script.
 
--   configure the S3 bucket to act as [static contents' web server](https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html)
 
-### Deploying the application
+### Setup MongoAtlas account and database
+1. sign-in or create a new account in [MongoAtlas](https://www.mongodb.com/cloud/atlas)
+1. create a new database using a lowercase name without spaces (e.g. production) and use `migrations` for the collection name
+1. go to `Database Access`
+1. create a user setting `add default privileges` to `readWrite` for the database defined above 
+1. go to `Project`, click on `connect` and then on `Connect your application`
+1. select `Node.js` from `Driver` dropdown
+   > keep note of the `Connection string only` (replace the `<password>` with the user password defined above), it will be asked later by the deployment script
+1. go to `Project`, click on `...` and then on `Command Line Tools`
+   > keep note of the `--host` parameter value from the `mongorestore` example, it will be asked later by the deployment script
 
-1)    open terminal and login into AWS
-1)    1)    move into the **VotingApp [server]** project folder
-1)    get last updates
-        ```shell
-        git pull
-        ```
-1)    install the required packages
-        ```shell
-        make install
-        ```
-1)    deploy on AWS infrastructure via Serverless framework:
-        ```shell
-        make deploy
-        ```
-        > By default, the target stage is `dev`, but, at the user prompt you can specify any other stages as target for the deployment.
-        >
-        > At the user prompt, you'll also have to enter your AWSkeys.
-        >
-        > For any stage, the following variables are expected toexist as parameters in AWS Systems Manager Parameter Store:
-        > -   **&lt;stage&gt;ByorMongoUri (_secure_)**: the fullURI to let the application connecting to MongoDB
-        > -   **&lt;stage&gt;ByorMongoUriAdmin (_secure_)**: thefull URI to perform admin operations on MongoDB (createdelete collections and indexes)
-        > -   **&lt;stage&gt;ByorMongoDbName**: the mongo databasename
-        >
-        > After a successful deploy, pending database migrations(if any) are automatically run against the target stage'sdatabase.
-1)    take note of the backend url generated during deploy
-1)    move into the **VotingApp [web-app]** project folder
-1)    get last updates
-        ```shell
-        git pull
-        ```
-1)    install the required packages
-        ```shell
-        make install
-        ```
-1)    build the application for production
-        ```shell
-        make build
-        ```
-        > The script will ask for the backend url, paste the value captured at step 6.
->Please refer to [BYOR-VotingApp \[web-app\]](https://github.com/thoughtworks/byor-voting-web-app/CONTRIBUTING.md) for more options about how to build for production
+### Deploy to AWS (single installation)
+Run the `deploy_to_lambda.sh` script passing the name of the installation. Use a lowercase name, without spaces  (e.g. production).
+If you want to deploy to several installation targets at once pass them as a comma separated list (e.g. test,production).
 
-1)    clear the existing content of the S3 bucket with:
-        ```shell
-        aws s3 rm s3://<your-bucket-name-here>/ --recursive
-        ```
-1)    deploy the new files with:
-        ```shell
-        aws s3 cp dist/byor-voting-web-app s3://<your-bucket-name-here>/ --recursive
-        ```
+```shell
+cd byor-voting-infrastructure
+aws/deploy_to_lambda.sh <installation_name1[,installation_nameX]>
+```
+
+The first time you run the script you will be asked to enter several informations. Afterwards, all the parameters will be stored inside the `config/byor_<installation_name>.sh` file. If you change some of the configuration values later, please either delete the file and let the script ask you again them, or update the file manually.
+
+Requested values:
+-    AWS access key id [`AWS_ACCESS_KEY_ID`]: the value of the `Access key ID` field contained downloaded file from point 4 of AWS instructions
+-    AWS secret access [`AWS_SECRET_ACCESS_KEY`]: the value of the `Secret access key` field contained downloaded file from point 4 of AWS instructions
+-    AWS region [`AWS_REGION`]: the AWS region where you want to host the application 
+-    MongoDB connection string [`MONGO_HOME`]: the local path of your mongodb installation home (required if you want to perform backups)
+-    MongoDB database [`MONGO_HOST`]: the value from point 7 in the MongoAtlas instructions
+-    MongoDB host [`MONGO_USER`]: the value from point 4 in the MongoAtlas instructions
+-    MongoDB username [`MONGO_PWD`]: the value from point 4 in the MongoAtlas instructions
+-    MongoDB password [`MONGO_AUTH_DB`]: the default value (`admin`) is usually the right one
+-    MongoDB admin database [`MONGO_URI`]: he value from point 6 in the MongoAtlas instructions
+
+The script will create S3 buckets with the following naming conventions:
+-   `<installation_name>--byor:` contains the build-your-own-radar SPA (single page application)
+-   `<installation_name>--byor-voting`: contains the byor-voting-server deployed as lambda
+-   `<installation_name>--byor-voting-web-app`: contains the byor-voting-web-app SPA (single page application)
+
+The script will configure `<installation_name>--byor` and `<installation_name>--byor-voting-web-app` buckets as [static contents' web server](https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html).
 
 ### Updating the application
-To update the **web-app** or the **server**, just repeat the steps above.
+To update the **web-app** or the **server**, just execute again the `aws/deploy_to_lambda.sh` script as above.
 
 
 ## Deploy BYOR-VotingApp to Kubernetes

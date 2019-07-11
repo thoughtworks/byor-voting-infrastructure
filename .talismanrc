@@ -29,8 +29,12 @@ fileignoreconfig:
 - filename: aws/deploy_to_lambda.sh
   checksum: 2322de30526c231399f0f0371761127f5ee31d0f4324b4d289eaf4ac881e757c
   ignore_detectors: []
-  
-#### the personal token id has to be removed from the following files while migrating to public git repo: ####
+- filename: aws/provision_k8s.sh
+  checksum: bf14c28e8fee6f84dfae4a7fb8b5bd1b32b30d75666a2187b09f34484d03af74
+  ignore_detectors: []
+- filename: aws/deploy_to_lambda.sh
+  checksum: f8bba53304b7b69574ac3c6c3c09b97f65e4437c304f17fbba52f8ccfda93a7f
+  ignore_detectors: []
 - filename: src/byor-voting-chart/charts/byor-voting-cert-0.1.0.tgz
   checksum: 672897c79b8e3f99124c29bcf6d2347098be50ca00a04ad72dd65f06c8a2da91
   ignore_detectors: []
@@ -45,9 +49,6 @@ fileignoreconfig:
   ignore_detectors: []
 - filename: src/byor-voting-chart/charts/byor-voting-db-0.1.0.tgz
   checksum: 0bc8b6de1172fa82fab687ec61643ef36da6bffebd417e7d02adc8267e207cbb
-  ignore_detectors: []
-- filename: src/byor-voting-chart/requirements.lock
-  checksum: bfca5fdf084ecc4fe5eb1406a8be5db86ba34bb7c8034f1ea7e1b5e7bf2ad196
   ignore_detectors: []
 - filename: charts/byor-voting-chart-0.1.0.tgz
   checksum: b68d0a90fc026230e74400380fb279e37d0f9b77f0099aaf338c9fc77b001409

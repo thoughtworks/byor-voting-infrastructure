@@ -30,6 +30,7 @@ You can find more information about the BYOR-VotingApp in the web-app Github [re
     -   [How to manage secrets](#how-to-manage-secrets)
 
 [How to contribute to the project](#how-to-contribute-to-the-project)
+
 ## Running BYOR-VotingApp locally
 
 1) install [Docker](https://www.docker.com/get-started)
@@ -42,15 +43,15 @@ You can find more information about the BYOR-VotingApp in the web-app Github [re
     ```shell
     cd byor-voting-web-app
     ```
-1) :warning: **[*TODO*]** startup web app, server, and a local MongoDB
+1) startup web app, server, and a local MongoDB
     ```shell
-    docker-compose up 
+    docker-compose -f docker-compose.all.yml up
     ```
-1) access the application on [http://localhost:4200](http://localhost:4200)
+1) access the application front-end on [http://localhost:4201](http://localhost:4201)
 
-> Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for more options on running the web app locally.
+> if needed, application back-end is accessible on [http://localhost:3001](http://localhost:3001) and application's mongo database is accessible at `localhost:27019`
 
-> Please refer to [BYOR-VotingApp \[server\]](https://github.com/thoughtworks/byor-voting-server) Github repository for more options on running the server locally and connect to a MongoDB database.
+> Please refer to [BYOR-VotingApp \[web-app\]](https://github.com/thoughtworks/byor-voting-web-app) Github repository for more options on running the application locally.
 
 ## Deploy BYOR-VotingApp to AWS Lambda
 

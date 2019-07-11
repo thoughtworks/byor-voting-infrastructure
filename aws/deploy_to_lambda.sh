@@ -114,6 +114,10 @@ export MONGO_AUTH_DB=${inMongoAuthDb:-admin}
 # app connection
 export MONGO_DB_NAME=${inMongoDbName:-${BYOR_ENV}}
 export MONGO_URI=${inMongoUri}
+# app services
+# export BACKEND_SERVICE_URL=
+# export RADAR_SERVICE_URL=
+# export WEB_APP_URL=
 EOL
         fi
         echo "--[INFO]: copying environment ${BYOR_ENV} configuration to server...";

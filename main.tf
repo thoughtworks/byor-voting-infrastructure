@@ -117,7 +117,7 @@ resource "aws_route" "private" {
 
 resource "aws_network_acl" "public" {
   vpc_id     = "${aws_vpc.default.id}"
-  subnet_ids = [ "${aws_subnet.public.*.id}" ]
+  subnet_ids = aws_subnet.public.*.id
 
   tags = {
     Name = "${var.name}-public"
@@ -150,7 +150,7 @@ resource "aws_network_acl_rule" "public_egress" {
 
 resource "aws_network_acl" "private" {
   vpc_id     = "${aws_vpc.default.id}"
-  subnet_ids = [ "${aws_subnet.private.*.id}" ]
+  subnet_ids = aws_subnet.private.*.id
   tags = {
     Name = "${var.name}-private"
   }
@@ -288,7 +288,7 @@ module "cluster" {
   name                    = "${var.name}"
   eks_version             = "${var.eks_version}"
   vpc_id                  = "${aws_vpc.default.id}"
-  subnet_ids              = ["${aws_subnet.private.*.id}","${aws_subnet.public.*.id}",]
+  subnet_ids              = flatten(["${aws_subnet.private.*.id}","${aws_subnet.public.*.id}",])
   cidr_block              = ["${var.cidr_block}"]
   ssh_cidr                = "${var.ssh_cidr}"
   enable_kubectl          = "${var.enable_kubectl}"
@@ -307,7 +307,7 @@ module "nodes" {
   cluster_certificate = "${module.cluster.certificate}"
   security_groups     = ["${module.cluster.node_security_group}"]
   instance_profile    = "${module.cluster.node_instance_profile}"
-  subnet_ids          = ["${aws_subnet.private.*.id}"]
+  subnet_ids          = "${aws_subnet.private.*.id}"
   ami_id              = "${var.node_ami_id}"
   ami_lookup          = "${var.node_ami_lookup}"
   instance_type       = "${var.node_instance_type}"

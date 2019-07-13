@@ -1,7 +1,7 @@
 data "aws_region" "current" {}
 
 data "aws_subnet" "first" {
-  id = "${element(var.subnet_ids, 0)}"
+  id = var.subnet_ids[0]
 }
 
 data "aws_ami" "eks_node" {

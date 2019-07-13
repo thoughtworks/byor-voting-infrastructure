@@ -289,7 +289,7 @@ module "cluster" {
   eks_version             = "${var.eks_version}"
   vpc_id                  = "${aws_vpc.default.id}"
   subnet_ids              = flatten(["${aws_subnet.private.*.id}","${aws_subnet.public.*.id}",])
-  cidr_block              = ["${var.cidr_block}"]
+  cidr_block              = var.cidr_block
   ssh_cidr                = "${var.ssh_cidr}"
   enable_kubectl          = "${var.enable_kubectl}"
   enable_dashboard        = "${var.enable_dashboard}"

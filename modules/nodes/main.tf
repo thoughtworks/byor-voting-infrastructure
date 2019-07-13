@@ -5,7 +5,7 @@ resource "aws_launch_configuration" "node" {
   name_prefix                 = "${var.name}"
   key_name                    = "${var.key_pair}"
   associate_public_ip_address = false
-  security_groups             = ["${var.security_groups}"]
+  security_groups             = var.security_groups
   user_data_base64            = "${base64encode(local.user_data)}"
 
   lifecycle {

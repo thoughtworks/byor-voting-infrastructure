@@ -4,7 +4,6 @@ set -e;
 
 BYOR_VOTING_INFRASTRUCTURE_HOME=$(pwd)
 
-
 ##### configuring terraform
 cd "$BYOR_VOTING_INFRASTRUCTURE_HOME"
 echo "--[INFO]: configuring Terraform....";
@@ -66,9 +65,12 @@ echo ""
 echo "--[INFO] Initializing Terraform..."
 terraform init
 echo "--[INFO] Cheking Terraform configuration..."
-terraform plan
+rm logs/terraform.log
+export TF_LOG=DEBUG
+export TF_LOG_PATH=logs/terraform.log
+terraform plan -out logs/terraform.plan
 echo "--[INFO] Provisioning Kubernetes cluster..."
-terraform apply
+terraform apply -auto-approve logs/terraform.plan
 
 ##### installing Isto, Cert-Manager, Kiali secrets, and Let's encrypt secrets...
 # echo ""

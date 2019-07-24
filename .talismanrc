@@ -26,14 +26,11 @@ fileignoreconfig:
 - filename: src/byor-voting-cert/values.yaml.sample
   checksum: 5ad60eefabea401644721762756ad650b7692fce2eea79e2b532133ae80838a6
   ignore_detectors: []
-- filename: aws/deploy_to_lambda.sh
-  checksum: 2322de30526c231399f0f0371761127f5ee31d0f4324b4d289eaf4ac881e757c
-  ignore_detectors: []
 - filename: aws/provision_k8s.sh
   checksum: e991d1ea03216e046c1a3521ce260955aff525563afbd8a48656df7d2b2ba8ce
   ignore_detectors: []
 - filename: aws/deploy_to_lambda.sh
-  checksum: 5c6fbd0ccce993c294b6430d343d16ced1c1fcc05a4bbfb7d36456e6afd3903d
+  checksum: 852a53183fdf797b02ffa24a123eb9914b1a8beac9d8aae6a3773fdbee451fc0
   ignore_detectors: []
 - filename: src/byor-voting-chart/charts/byor-voting-cert-0.1.0.tgz
   checksum: 672897c79b8e3f99124c29bcf6d2347098be50ca00a04ad72dd65f06c8a2da91

@@ -57,11 +57,6 @@ cd "${BYOR_VOTING_WEB_APP_HOME}"
 git fetch
 git pull | tee logs/byor-voting-web-app.log
 
-echo "--[INFO] Pulling latest version of byor-voting-infrastructure..."
-cd "${BYOR_VOTING_INFRASTRUCTURE_HOME}"
-git fetch
-git pull
-
 
 echo "--[INFO] deploying to targets..."
 for target in ${targets_list[@]}; do 

@@ -30,7 +30,7 @@ fileignoreconfig:
   checksum: e991d1ea03216e046c1a3521ce260955aff525563afbd8a48656df7d2b2ba8ce
   ignore_detectors: []
 - filename: aws/deploy_to_lambda.sh
-  checksum: 852a53183fdf797b02ffa24a123eb9914b1a8beac9d8aae6a3773fdbee451fc0
+  checksum: d9a85ba677791e4c88dce872a0357d3be6725a22ee9416d36ffd7a1c6b5fcecd
   ignore_detectors: []
 - filename: src/byor-voting-chart/charts/byor-voting-cert-0.1.0.tgz
   checksum: 672897c79b8e3f99124c29bcf6d2347098be50ca00a04ad72dd65f06c8a2da91

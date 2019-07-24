@@ -30,10 +30,10 @@ fileignoreconfig:
   checksum: 2322de30526c231399f0f0371761127f5ee31d0f4324b4d289eaf4ac881e757c
   ignore_detectors: []
 - filename: aws/provision_k8s.sh
-  checksum: bf14c28e8fee6f84dfae4a7fb8b5bd1b32b30d75666a2187b09f34484d03af74
+  checksum: e991d1ea03216e046c1a3521ce260955aff525563afbd8a48656df7d2b2ba8ce
   ignore_detectors: []
 - filename: aws/deploy_to_lambda.sh
-  checksum: f8bba53304b7b69574ac3c6c3c09b97f65e4437c304f17fbba52f8ccfda93a7f
+  checksum: 5c6fbd0ccce993c294b6430d343d16ced1c1fcc05a4bbfb7d36456e6afd3903d
   ignore_detectors: []
 - filename: src/byor-voting-chart/charts/byor-voting-cert-0.1.0.tgz
   checksum: 672897c79b8e3f99124c29bcf6d2347098be50ca00a04ad72dd65f06c8a2da91

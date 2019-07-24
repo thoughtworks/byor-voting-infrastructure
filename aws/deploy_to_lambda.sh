@@ -2,7 +2,7 @@
 
 set -e;
 
-##### setting projects locations...
+echo "--[INFO] setting projects locations..."
 if [ -z "${CI}" ]; then
     tmp=..
 else
@@ -14,7 +14,7 @@ BYOR_VOTING_SERVER_HOME=$(pwd)/$tmp/byor-voting-server
 BYOR_VOTING_WEB_APP_HOME=$(pwd)/$tmp/byor-voting-web-app
 
 
-##### setting targets...
+echo "--[INFO] setting targets..."
 if [ -z $1 ]; then
     if [ -z "${CD_TARGETS}" ]; then 
         read -e -p "Please enter the targets separated by comma (i.e. prod,prod2): " targets; 
@@ -27,7 +27,7 @@ fi
 IFS=',' read -r -a targets_list <<< "$targets"
 
 
-##### pulling latest changes...
+echo "--[INFO] pulling latest changes..."
 cd $BYOR_VOTING_INFRASTRUCTURE_HOME/tmp
 echo "--[INFO] Pulling latest version of byor..."
 if [[ ! -d "${BYOR_HOME}" ]]; then
@@ -37,7 +37,7 @@ cd "$BYOR_HOME"
 git checkout master
 git pull
 git fetch origin pull/101/head:pr101
-git checkout pr101 | tee $BYOR_VOTING_SERVER_HOME/logs/byor.log
+git checkout pr101 | tee $BYOR_VOTING_INFRASTRUCTURE_HOME/logs/byor.log
 
 cd $BYOR_VOTING_INFRASTRUCTURE_HOME/tmp
 echo "--[INFO] Pulling latest version of byor-voting-server..."
@@ -46,7 +46,7 @@ if [[ ! -d "${BYOR_VOTING_SERVER_HOME}" ]]; then
 fi
 cd "$BYOR_VOTING_SERVER_HOME"
 git fetch
-git pull | tee logs/byor-voting-server.log
+git pull | tee ${BYOR_VOTING_INFRASTRUCTURE_HOME}/logs/byor-voting-server.log
 
 cd $BYOR_VOTING_INFRASTRUCTURE_HOME/tmp
 echo "--[INFO] Pulling latest version of byor-voting-web-app..."
@@ -63,14 +63,14 @@ git fetch
 git pull
 
 
-###### deploying to targets...
-for item in ${targets_list[@]}; do 
-    echo "--[INFO] deploying ${item}...";
+echo "--[INFO] deploying to targets..."
+for target in ${targets_list[@]}; do 
+    echo "--[INFO] deploying to target: ${target}...";
 
 
 ###### setting environment variables...
-    AWS_SERVICE_STAGE=$item
-    export BYOR_ENV=$item
+    export AWS_SERVICE_STAGE=${target}
+    export BYOR_ENV=${target}
     CONFIG_FILE="${BYOR_VOTING_INFRASTRUCTURE_HOME}/config/byor_${BYOR_ENV}.sh"
 
 
@@ -126,10 +126,10 @@ EOL
         cp $CONFIG_FILE "${BYOR_VOTING_WEB_APP_HOME}/config/byor_${BYOR_ENV}.sh"
         source $CONFIG_FILE
     fi
+    export AWS_DEFAULT_REGION=${AWS_REGION}
 
 
-###### configuring AWS S3 buckets...
-    echo ""
+    echo "--[INFO] configuring AWS S3 buckets..."
     echo "--[INFO] Creating AWS buckets..."
     aws/create_s3_bucket.sh $AWS_SERVICE_STAGE--byor
     aws/create_s3_bucket.sh $AWS_SERVICE_STAGE--byor-voting
@@ -158,10 +158,11 @@ EOL
     fi
 
 
-###### deploying byor-voting-server...
     echo ""
     echo "--[INFO]: deploying byor-voting-server..."
     cd "$BYOR_VOTING_SERVER_HOME"
+    /bin/bash .make/utils/execute-in-docker.sh -s "byor-voting-server" -o "--no-start"
+    docker cp . $(docker-compose ps -q byor-voting-server):/usr/src/app/
     make install | tee logs/byor-voting-server-install.log
     make deploy | tee logs/byor-voting-server-deploy.log
     if cat $BYOR_VOTING_SERVER_HOME/logs/byor-voting-server-deploy.log | grep "exited with code 1"; then
@@ -174,7 +175,6 @@ EOL
     fi
 
 
-###### deploying byor...
     echo ""
     echo "--[INFO]: deploying byor..."
     cd "$BYOR_VOTING_WEB_APP_HOME"
@@ -185,11 +185,12 @@ EOL
     fi
 
 
-###### deploying byor-voting-web-app...
     echo ""
     echo "--[INFO]: deploying byor-voting-web-app..."
     echo "--[INFO]: BACKEND_SERVICE_URL=${BACKEND_SERVICE_URL}"
     echo "--[INFO]: RADAR_SERVICE_URL=${RADAR_SERVICE_URL}"
+    /bin/bash .make/utils/execute-in-docker.sh -s "byor-voting-web-app" -o "--no-start"
+    docker cp . $(docker-compose ps -q byor-voting-web-app):/usr/src/app/
     make install | tee logs/byor-voting-web-app-install.log
     make build | tee logs/byor-voting-web-app-build.log
     make deploy | tee logs/byor-voting-web-app-deploy.log

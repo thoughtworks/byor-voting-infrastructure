@@ -8,10 +8,10 @@ if [ -z "${CI}" ]; then
 else
     tmp=tmp
 fi
-BYOR_HOME=$(pwd)/$tmp/build-your-own-radar
+BYOR_HOME=$(pwd)/${tmp}/build-your-own-radar
 BYOR_VOTING_INFRASTRUCTURE_HOME=$(pwd)
-BYOR_VOTING_SERVER_HOME=$(pwd)/$tmp/byor-voting-server
-BYOR_VOTING_WEB_APP_HOME=$(pwd)/$tmp/byor-voting-web-app
+BYOR_VOTING_SERVER_HOME=$(pwd)/${tmp}/byor-voting-server
+BYOR_VOTING_WEB_APP_HOME=$(pwd)/${tmp}/byor-voting-web-app
 
 
 echo "--[INFO] setting targets..."
@@ -19,46 +19,46 @@ if [ -z $1 ]; then
     if [ -z "${CD_TARGETS}" ]; then 
         read -e -p "Please enter the targets separated by comma (i.e. prod,prod2): " targets; 
     else 
-        targets=$CD_TARGETS; 
+        targets=${CD_TARGETS}; 
     fi
 else
     targets=$1
 fi
-IFS=',' read -r -a targets_list <<< "$targets"
+IFS=',' read -r -a targets_list <<< "${targets}"
 
 
 echo "--[INFO] pulling latest changes..."
-cd $BYOR_VOTING_INFRASTRUCTURE_HOME/tmp
+cd ${BYOR_VOTING_INFRASTRUCTURE_HOME}/tmp
 echo "--[INFO] Pulling latest version of byor..."
 if [[ ! -d "${BYOR_HOME}" ]]; then
     git clone https://github.com/thoughtworks/build-your-own-radar.git
 fi
-cd "$BYOR_HOME"
+cd "${BYOR_HOME}"
 git checkout master
 git pull
 git fetch origin pull/101/head:pr101
-git checkout pr101 | tee $BYOR_VOTING_INFRASTRUCTURE_HOME/logs/byor.log
+git checkout pr101 | tee ${BYOR_VOTING_INFRASTRUCTURE_HOME}/logs/byor.log
 
-cd $BYOR_VOTING_INFRASTRUCTURE_HOME/tmp
+cd ${BYOR_VOTING_INFRASTRUCTURE_HOME}/tmp
 echo "--[INFO] Pulling latest version of byor-voting-server..."
 if [[ ! -d "${BYOR_VOTING_SERVER_HOME}" ]]; then
     git clone https://github.com/thoughtworks/byor-voting-server.git
 fi
-cd "$BYOR_VOTING_SERVER_HOME"
+cd "${BYOR_VOTING_SERVER_HOME}"
 git fetch
 git pull | tee ${BYOR_VOTING_INFRASTRUCTURE_HOME}/logs/byor-voting-server.log
 
-cd $BYOR_VOTING_INFRASTRUCTURE_HOME/tmp
+cd ${BYOR_VOTING_INFRASTRUCTURE_HOME}/tmp
 echo "--[INFO] Pulling latest version of byor-voting-web-app..."
 if [[ ! -d "${BYOR_VOTING_WEB_APP_HOME}" ]]; then
     git clone https://github.com/thoughtworks/byor-voting-web-app.git
 fi
-cd "$BYOR_VOTING_WEB_APP_HOME"
+cd "${BYOR_VOTING_WEB_APP_HOME}"
 git fetch
 git pull | tee logs/byor-voting-web-app.log
 
 echo "--[INFO] Pulling latest version of byor-voting-infrastructure..."
-cd "$BYOR_VOTING_INFRASTRUCTURE_HOME"
+cd "${BYOR_VOTING_INFRASTRUCTURE_HOME}"
 git fetch
 git pull
 
@@ -77,7 +77,7 @@ for target in ${targets_list[@]}; do
     echo ""
     if [ -z "${CI}" ]; then
         echo "--[INFO] Validating configuration..."
-        if [ -f $CONFIG_FILE ]; then
+        if [ -f ${CONFIG_FILE} ]; then
             echo "--[INFO]: configuration already exists for environment ${BYOR_ENV}";
         else
             echo "--[INFO]: AWS";
@@ -95,7 +95,7 @@ for target in ${targets_list[@]}; do
             read -e -p "Please enter your MongoDB admin database [admin]: " inMongoAuthDb;
 
             echo "--[INFO]: creating configuration file for environment ${BYOR_ENV}...";
-            cat > $CONFIG_FILE << EOL
+            cat > ${CONFIG_FILE} << EOL
 #!/bin/bash
 
 # aws
@@ -121,23 +121,23 @@ export MONGO_URI=${inMongoUri}
 EOL
         fi
         echo "--[INFO]: copying environment ${BYOR_ENV} configuration to server...";
-        cp $CONFIG_FILE "${BYOR_VOTING_SERVER_HOME}/config/byor_${BYOR_ENV}.sh"
+        cp ${CONFIG_FILE} "${BYOR_VOTING_SERVER_HOME}/config/byor_${BYOR_ENV}.sh"
         echo "--[INFO]: copying environment ${BYOR_ENV} configuration to web-app...";
-        cp $CONFIG_FILE "${BYOR_VOTING_WEB_APP_HOME}/config/byor_${BYOR_ENV}.sh"
-        source $CONFIG_FILE
+        cp ${CONFIG_FILE} "${BYOR_VOTING_WEB_APP_HOME}/config/byor_${BYOR_ENV}.sh"
+        source ${CONFIG_FILE}
     fi
     export AWS_DEFAULT_REGION=${AWS_REGION}
 
 
     echo "--[INFO] configuring AWS S3 buckets..."
     echo "--[INFO] Creating AWS buckets..."
-    aws/create_s3_bucket.sh $AWS_SERVICE_STAGE--byor
-    aws/create_s3_bucket.sh $AWS_SERVICE_STAGE--byor-voting
-    aws/create_s3_bucket.sh $AWS_SERVICE_STAGE--byor-voting-web-app
+    aws/create_s3_bucket.sh ${AWS_SERVICE_STAGE}--byor
+    aws/create_s3_bucket.sh ${AWS_SERVICE_STAGE}--byor-voting
+    aws/create_s3_bucket.sh ${AWS_SERVICE_STAGE}--byor-voting-web-app
     echo ""
     echo "--[INFO] Configuring AWS buckets..."
-    aws/enable_s3_bucket_for_web_hosting.sh $AWS_SERVICE_STAGE--byor
-    aws/enable_s3_bucket_for_web_hosting.sh $AWS_SERVICE_STAGE--byor-voting-web-app
+    aws/enable_s3_bucket_for_web_hosting.sh ${AWS_SERVICE_STAGE}--byor
+    aws/enable_s3_bucket_for_web_hosting.sh ${AWS_SERVICE_STAGE}--byor-voting-web-app
     echo ""
     echo "--[INFO] Creating parameters in AWS Parameter Store..."
     set +e;
@@ -146,10 +146,10 @@ EOL
     jwtKeyStatus=$(aws ssm get-parameter --name "${AWS_SERVICE_STAGE}ByorJwtKey" 2>&1)
     set -e;
     if echo ${mongoDbName} | grep 'ParameterNotFound'; then
-        aws ssm put-parameter --name "${AWS_SERVICE_STAGE}ByorMongoDbName" --type "String" --value $MONGO_DB_NAME --overwrite
+        aws ssm put-parameter --name "${AWS_SERVICE_STAGE}ByorMongoDbName" --type "String" --value ${MONGO_DB_NAME} --overwrite
     fi
     if echo ${mongoUri} | grep 'ParameterNotFound'; then
-        aws ssm put-parameter --name "${AWS_SERVICE_STAGE}ByorMongoUri" --type "SecureString" --value $MONGO_URI --overwrite
+        aws ssm put-parameter --name "${AWS_SERVICE_STAGE}ByorMongoUri" --type "SecureString" --value ${MONGO_URI} --overwrite
     fi
     if echo ${jwtKeyStatus} | grep 'ParameterNotFound'; then
         echo "--[INFO] no JWT token found, creating a new one..."
@@ -160,28 +160,28 @@ EOL
 
     echo ""
     echo "--[INFO]: deploying byor-voting-server..."
-    cd "$BYOR_VOTING_SERVER_HOME"
+    cd "${BYOR_VOTING_SERVER_HOME}"
     /bin/bash .make/utils/execute-in-docker.sh -s "byor-voting-server" -o "--no-start"
     docker cp . $(docker-compose ps -q byor-voting-server):/usr/src/app/
     make install | tee logs/byor-voting-server-install.log
     make deploy | tee logs/byor-voting-server-deploy.log
-    if cat $BYOR_VOTING_SERVER_HOME/logs/byor-voting-server-deploy.log | grep "exited with code 1"; then
+    if cat ${BYOR_VOTING_SERVER_HOME}/logs/byor-voting-server-deploy.log | grep "exited with code 1"; then
         echo "--[ERROR]: serverless deployment failed!"
         exit 1;
     fi
-    export BACKEND_SERVICE_URL=$(cat $BYOR_VOTING_SERVER_HOME/logs/byor-voting-server-deploy.log | grep POST | rev | cut -d' ' -f1 | rev)/
+    export BACKEND_SERVICE_URL=$(cat ${BYOR_VOTING_SERVER_HOME}/logs/byor-voting-server-deploy.log | grep POST | rev | cut -d' ' -f1 | rev)/
     if [ -z "${CI}" ]; then
-        awk '// { sub(/^# export BACKEND_SERVICE_URL=.*/,"# export BACKEND_SERVICE_URL="ENVIRON["BACKEND_SERVICE_URL"]); print }' $CONFIG_FILE > tmp.tmp && mv tmp.tmp $CONFIG_FILE
+        awk '// { sub(/^# export BACKEND_SERVICE_URL=.*/,"# export BACKEND_SERVICE_URL="ENVIRON["BACKEND_SERVICE_URL"]); print }' ${CONFIG_FILE} > tmp.tmp && mv tmp.tmp ${CONFIG_FILE}
     fi
 
 
     echo ""
     echo "--[INFO]: deploying byor..."
-    cd "$BYOR_VOTING_WEB_APP_HOME"
-    bash .make/cd/deploy_byor_aws.sh $BYOR_HOME | tee logs/byor-deploy.log
+    cd "${BYOR_VOTING_WEB_APP_HOME}"
+    bash .make/cd/deploy_byor_aws.sh ${BYOR_HOME} | tee logs/byor-deploy.log
     export RADAR_SERVICE_URL=http://${AWS_SERVICE_STAGE}--byor.s3-website-${AWS_REGION}.amazonaws.com/
     if [ -z "${CI}" ]; then
-        awk '// { sub(/^# export RADAR_SERVICE_URL=.*/,"# export RADAR_SERVICE_URL="ENVIRON["RADAR_SERVICE_URL"]); print }' $CONFIG_FILE > tmp.tmp && mv tmp.tmp $CONFIG_FILE
+        awk '// { sub(/^# export RADAR_SERVICE_URL=.*/,"# export RADAR_SERVICE_URL="ENVIRON["RADAR_SERVICE_URL"]); print }' ${CONFIG_FILE} > tmp.tmp && mv tmp.tmp ${CONFIG_FILE}
     fi
 
 
@@ -197,12 +197,12 @@ EOL
     export WEB_APP_URL=http://${AWS_SERVICE_STAGE}--byor-voting-web-app.s3-website-${AWS_REGION}.amazonaws.com/
     echo "--[INFO]: byor-voting-web-app available at ${WEB_APP_URL}"
     if [ -z "${CI}" ]; then
-        awk '// { sub(/^# export WEB_APP_URL=.*/,"# export WEB_APP_URL="ENVIRON["WEB_APP_URL"]); print }' $CONFIG_FILE > tmp.tmp && mv tmp.tmp $CONFIG_FILE
+        awk '// { sub(/^# export WEB_APP_URL=.*/,"# export WEB_APP_URL="ENVIRON["WEB_APP_URL"]); print }' ${CONFIG_FILE} > tmp.tmp && mv tmp.tmp ${CONFIG_FILE}
     fi
 
 
 ###### performing administrative tasks...
-    # cd "$BYOR_VOTING_SERVER_HOME"
+    # cd "${BYOR_VOTING_SERVER_HOME}"
 
     # echo ""
     # echo "--[INFO]: validating db..."

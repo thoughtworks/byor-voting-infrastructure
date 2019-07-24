@@ -52,14 +52,14 @@ jobs:
       - run_common_initial_steps
       - run:
           name: Execute E2E tests
-          command: echo "TODO: E2E tests"
+          command: echo TODO
   deliver:
     <<: *defaults
     steps:
       - run_common_initial_steps
       - run:
           name: Deploy VotingApp to production
-          command: echo "TODO: aws/deploy_to_lambda.sh"
+          command: echo TODO #aws/deploy_to_lambda.sh
 workflows:
   version: 2.1
   tagged:

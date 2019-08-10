@@ -1,0 +1,90 @@
+name,quadrant,is_new
+.NET Core,Platforms,FALSE
+A single CI instance for all teams,Techniques,FALSE
+APIs as a product,Techniques,FALSE
+AWS,Platforms,FALSE
+AWS Lambda,Platforms,FALSE
+Akka,Platforms,FALSE
+Amazon API Gateway,Platforms,FALSE
+Anemic REST,Techniques,FALSE
+Angular,Languages & Frameworks,FALSE
+Ansible,Tools,FALSE
+Apache Kafka,Tools,FALSE
+Apache Spark,Platforms,FALSE
+Azure,Platforms,FALSE
+BFF - Backend for frontends,Techniques,FALSE
+Build pipelines,Techniques,FALSE
+Camunda,Languages & Frameworks,FALSE
+CircleCI,Tools,FALSE
+Citrix for development,Tools,FALSE
+Client-side MVC,Tools,FALSE
+Clojure,Languages & Frameworks,FALSE
+Consumer-driven contract testing,Techniques,FALSE
+Container security scanning,Techniques,FALSE
+Cypress,Tools,FALSE
+Data Lake,Techniques,FALSE
+Declarative provisioning,Techniques,FALSE
+Development environments in the cloud,Techniques,FALSE
+Docker,Platforms,FALSE
+ES6,Languages & Frameworks,FALSE
+Elastic Search,Platforms,FALSE
+Electron,Platforms,FALSE
+Event Sourcing,Techniques,FALSE
+Feature branching,Techniques,FALSE
+Functional Java,Languages & Frameworks,FALSE
+Git,Tools,FALSE
+Go language,Languages & Frameworks,FALSE
+GoCD,Tools,FALSE
+Google Cloud Platform,Platforms,FALSE
+GraphQL,Languages & Frameworks,FALSE
+Groovy,Languages & Frameworks,FALSE
+Hybrid clouds,Platforms,FALSE
+Immutable.js,Languages & Frameworks,FALSE
+Infrastructure as code,Tools,FALSE
+JRuby,Platforms,FALSE
+Java 8,Languages & Frameworks,FALSE
+Jenkins as a deployment pipeline,Tools,FALSE
+Kafka Streams,Platforms,FALSE
+Kotlin,Languages & Frameworks,FALSE
+Lightweight Architecture Decision Records,Techniques,FALSE
+Logstash & Graylog2,Tools,FALSE
+Long lived branches with Gitflow,Techniques,FALSE
+Low-code platforms,Platforms,FALSE
+Microservices,Techniques,FALSE
+Neo4J,Platforms,FALSE
+Next.js,Languages & Frameworks,TRUE
+Node.js,Platforms,FALSE
+Observability as code,Techniques,FALSE
+Pipelines as code,Techniques,FALSE
+Pivotal Cloud Foundry,Platforms,FALSE
+Polyglot programming,Techniques,FALSE
+Postman,Tools,FALSE
+Prettier,Tools,FALSE
+Progressive Web Applications,Techniques,FALSE
+Promises for asynchronous programming,Techniques,FALSE
+Puppet,Tools,FALSE
+Python 3,Languages & Frameworks,FALSE
+React Native,Languages & Frameworks,FALSE
+React.js,Languages & Frameworks,FALSE
+ReactiveX,Languages & Frameworks,FALSE
+Redis,Platforms,FALSE
+Redux,Languages & Frameworks,FALSE
+Responsive web design,Techniques,FALSE
+Scala,Languages & Frameworks,FALSE
+Scrum certification,Techniques,FALSE
+Separate DevOps team,Techniques,FALSE
+Sonar,Tools,FALSE
+Splunk,Tools,FALSE
+Spring Boot,Languages & Frameworks,FALSE
+Structured logging,Techniques,FALSE
+Swagger,Tools,FALSE
+TDD'ing containers,Techniques,FALSE
+Talisman,Tools,FALSE
+TensorFlow,Platforms,FALSE
+Terraform,Tools,FALSE
+Testing as a separate organization,Techniques,FALSE
+TypeScript,Languages & Frameworks,FALSE
+Vagrant,Tools,FALSE
+Velocity as productivity,Techniques,FALSE
+Visual Studio Code,Tools,FALSE
+Web Components standard,Platforms,FALSE

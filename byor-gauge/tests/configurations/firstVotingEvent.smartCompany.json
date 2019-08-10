@@ -1,0 +1,34 @@
+{
+  "name": "The first voting event for the SmartCompany",
+  "steps": [
+    {
+      "name": "vote all techs",
+      "identification": { "name": "nickname" },
+      "action": {
+        "name": "vote",
+        "parameters": {
+          "commentOnVoteBlocked": false,
+          "allowTagsOnVote": true,
+          "tags": ["Prod Experience", "Personal Project", "Blogs-Conferences", "Training", "Colleagues"]
+        }
+      }
+    },
+    {
+      "name": "conversation on all techs",
+      "identification": { "name": "login", "groups": ["architect", "senior architect"] },
+      "action": {
+        "name": "conversation",
+        "parameters": {
+          "displayVotesAndCommentNumbers": true,
+          "allowTagsOnVote": true,
+          "tags": ["Prod Experience", "Personal Project", "Blogs-Conferences", "Training", "Colleagues"]
+        }
+      }
+    },
+    {
+      "name": "recommendations on all techs",
+      "identification": { "name": "login", "groups": ["champion"] },
+      "action": { "name": "recommendation" }
+    }
+  ]
+}

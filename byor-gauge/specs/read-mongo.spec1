@@ -1,0 +1,14 @@
+# Connect to a Mongo, Read something and then close connection
+
+We first connect to a Mongo instance, then read something from it and then close the connection
+
+## Connect
+We connect to Mongo
+* Connect with URI "mongodb://localhost:27017/"
+* Print on console "connection opened"
+
+## Read
+* Read the users
+
+## Close DB
+* Close the connection

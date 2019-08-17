@@ -1,7 +1,7 @@
 {
-  "name": "gauge-ts-template",
-  "version": "0.0.1",
-  "description": "Starter template for writing TypeScript tests for Gauge",
+  "name": "gauge-tests-for-byor",
+  "version": "1.0.0",
+  "description": "Gauge tests for byor implemented in Typescript",
   "dependencies": {
     "chai": "^4.2.0",
     "gauge-ts": "latest",

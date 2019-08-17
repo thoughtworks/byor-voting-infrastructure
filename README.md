@@ -29,6 +29,8 @@ You can find more information about the BYOR-VotingApp in the web-app Github [re
     -   [Generating certificates with Let's encrypt](#generating-certificates-with-lets-encrypt)
     -   [How to manage secrets](#how-to-manage-secrets)
 
+[Run end to end tests based on Gauge](#run-end-to-end-tests-based-on-gauge)
+
 [How to contribute to the project](#how-to-contribute-to-the-project)
 
 ## Running BYOR-VotingApp locally
@@ -265,6 +267,23 @@ kubectl -n istio-system port-forward $(kubectl -n istio-system get pod -l app=gr
 
 ### How to manage secrets
 :warning: **[*TODO*]**  
+
+## Run end to end tests based on Gauge
+
+The **byor-gauge** folder contains the code that implements end to end tests using the [Gaugue](https://gauge.org/) test framework.
+
+The tests required the installation of the Gauge Testing Framework which can be accomplished with the command 
+```shell
+npm install -g @getgauge/cli
+```
+
+Before launching the tests make sure that there is a **byor-voting-server** instance up and running.
+Currently the server has to run at *http://localhost:3000/*.
+
+To execute the test run, from within **byor-gauge** folder, the command 
+```shell
+gauge run specs
+```
 
 ## How to contribute to the project
 

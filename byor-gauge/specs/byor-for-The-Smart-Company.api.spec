@@ -107,12 +107,12 @@ Then votes a voter whose nickname is "Snail".
 Then a "Wise Man" votes.
 * "Wise Man" in "FirstVotingEventForTheSmartCompany" gives the votes 
 
-   |technology |ring |comment|tags             |
-   |-----------|-----|-------|-----------------|
-   |Anemic REST|adopt|go4it  |Prod Experience  |
-   |Data Lake  |adopt|go4it  |Personal Project |
-   |Prettier   |hold |STOPPP |Training         |
-   |Swagger    |hold |STOPPP |Blogs-Conferences|
+   |technology |ring |comment|tags            |
+   |-----------|-----|-------|----------------|
+   |Anemic REST|adopt|go4it  |Prod Experience |
+   |Data Lake  |adopt|go4it  |Personal Project|
+   |Prettier   |hold |STOPPP |Training        |
+   |Swagger    |hold |       |                |
 
 ## Some correct their first vote
 After having saved its vote, "Snails" decides to add one technology, "GraphQL" which recently it used with success,
@@ -120,12 +120,12 @@ remove its vote for "Data Lake" since it does not have any experience and correc
 "hold" to "assess".
 * "Snail" corrects the vote in "FirstVotingEventForTheSmartCompany" 
 
-   |technology |ring  |comment |tags             |
-   |-----------|------|--------|-----------------|
-   |Anemic REST|adopt |great   |Prod Experience  |
-   |Prettier   |assess|well... |Training         |
-   |Swagger    |assess|maybe...|Blogs-Conferences|
-   |GraphQL    |adopt |SUPER   |Prod Experience  |
+   |technology |ring  |comment|tags           |
+   |-----------|------|-------|---------------|
+   |Anemic REST|adopt |great  |Prod Experience|
+   |Prettier   |assess|well...|Training       |
+   |Swagger    |assess|       |               |
+   |GraphQL    |adopt |       |               |
 
 ## The first voting event is closed
 The voting window lasts 30 minutes, after which Rebecca closes the voting event
@@ -140,3 +140,33 @@ Via API though we can retrieve the votes
 * Fetch the votes posted in "FirstVotingEventForTheSmartCompany"
 as well as the Blips
 * Calculate the blips for "FirstVotingEventForTheSmartCompany"
+
+## The BYOR conversation among the architects starts
+Rebecca, Martina and James designed the BYOR First Voting Event to have, after the initial voting round, a second step of conversation
+among the architects of The Smart Company, to allow them add comments on specific technologiies and to respond to comments
+posted by others.
+This second step is restricted to Architect and Senior Architects as it has been defined in the `firstVotingEvent.smartCompany.json`
+configuration file.
+Architect and Senior Architect roles have been added to the relevant users in the file `users.csv`.
+In the evening Martina moves the voting event to the second step.
+* Login BYOR with user id "martina@smart.com" and pwd "martina"
+* Move "FirstVotingEventForTheSmartCompany" to the next step in the flow
+* Open the voting event "FirstVotingEventForTheSmartCompany"
+While moving the voting event to the next step, the back end calculates the results of the voting session for each technology,
+counting the votes per ring and per tag as well as counting the comments.
+
+## One architect responds to a comment on a vote
+Kent is the first one to login to the BYOR app. He first takes a glance to the list of technologies, the votes and the comments cast
+for each of the technologies
+* Login BYOR with user id "kent@smart.com" and pwd "kent"
+* Fetch voting event "FirstVotingEventForTheSmartCompany" to see all votes and comments
+
+Kent is curious to see what people said about "Data Lake" and decides to look at the details of the votes for Data lake.
+* Look at the details of the votes for "Data Lake" in event "FirstVotingEventForTheSmartCompany"
+
+Reading the comments he decides to respond to the comment of "Hare" who wrote 'sorta' as comment, while Kent is a fan of Data Lakes
+* Respond "Data lakes are really great" to the first comment of "Hare"
+
+## A second architect logs in and sees the new comment
+Alonzo, a Senior Architect at the SmartCompany logs in, open the details of Data Lake and sees the comment added by Kent.
+* Look at details of "Data Lake" in event "FirstVotingEventForTheSmartCompany" after "kent@smart.com" added a replay to a comment of "Hare"

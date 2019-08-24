@@ -9,6 +9,8 @@ import { Technology } from '../models/technology';
 import { VoteCredentialized } from '../models/vote-credentialized';
 import { Observable } from 'rxjs';
 import { Vote } from '../models/vote';
+import { VotingEvent } from '../models/voting-event';
+import { Comment } from '../models/comment';
 
 export function setAdministrator(userId: string, pwd: string, defaultAdminID: string, defaultAdminPwd: string) {
   const body = {
@@ -135,7 +137,7 @@ export function openVotingEvent(votingEventId: string, headers: any) {
   return createPostRequestObs(body, headers);
 }
 
-export function getVotingEvent(votingEventId: string) {
+export function getVotingEvent(votingEventId: string): Observable<VotingEvent & { error: any }> {
   let body = { service: 'getVotingEvent', _id: votingEventId };
   return createPostRequestObs(body);
 }
@@ -158,5 +160,20 @@ export function closeVotingEvent(votingEventId: string, headers: any) {
 
 export function calculateBlips(votingEventId: string, headers: any) {
   let body = { service: 'calculateBlips', votingEvent: { _id: votingEventId } };
+  return createPostRequestObs(body, headers);
+}
+
+export function moveToNexFlowStep(votingEventId: string, headers: any) {
+  let body = { service: 'moveToNexFlowStep', _id: votingEventId };
+  return createPostRequestObs(body, headers);
+}
+
+export function getVotesWithCommentsForTechAndEvent(technologyId: string, votingEventId: string, headers: any) {
+  let body = { service: 'getVotesWithCommentsForTechAndEvent', technologyId, eventId: votingEventId };
+  return createPostRequestObs(body, headers);
+}
+
+export function addReplyToVoteComment(voteId: string, reply: Comment, commentReceivingReplyId: string, headers: any) {
+  let body = { service: 'addReplyToVoteComment', voteId, reply, commentReceivingReplyId };
   return createPostRequestObs(body, headers);
 }

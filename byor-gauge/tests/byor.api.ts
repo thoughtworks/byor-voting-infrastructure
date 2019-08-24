@@ -5,6 +5,8 @@ import { expect } from 'chai';
 import { Step } from 'gauge-ts';
 import { tap, map, concatMap } from 'rxjs/operators';
 
+import { ProtoTable } from './proto-table.types';
+
 import {
   setAdministrator,
   login,
@@ -20,18 +22,25 @@ import {
   saveVotes,
   getVotes,
   closeVotingEvent,
-  calculateBlips
+  calculateBlips,
+  moveToNexFlowStep,
+  getVotesWithCommentsForTechAndEvent,
+  addReplyToVoteComment
 } from './byor.api.functions';
 import { VoteCredentialized } from '../models/vote-credentialized';
 import { VoteCredentials } from '../models/vote-credentials';
 import { Vote } from '../models/vote';
+import { VotingEvent } from '../models/voting-event';
+import { Comment } from '../models/comment';
 
-export default class BYOR_Setup {
+export default class BYOR_APIs {
   private executionContext: {
     token: string;
     initiativeNameIdMap: { [name: string]: string };
     votingEventNameIdMap: { [name: string]: string };
-  } = { token: null, initiativeNameIdMap: {}, votingEventNameIdMap: {} };
+    selectedVotingEvent: VotingEvent;
+    votesOnSelectedTechnology: Vote[];
+  } = { token: null, initiativeNameIdMap: {}, votingEventNameIdMap: {}, selectedVotingEvent: null, votesOnSelectedTechnology: null };
 
   @Step('Set administrator with userId <userId> and pwd <pwd>.')
   public setAdministrator(userId: string, pwd: string) {
@@ -184,12 +193,17 @@ export default class BYOR_Setup {
           if (!technology) {
             throw `Technology ${r.cells[0]} not found among the technologies of voting event ${votingEventName}`;
           }
-          return {
+          const vote: Vote = {
             technology,
-            ring: r.cells[1],
-            comment: { text: r.cells[2] },
-            tags: [r.cells[3]]
+            ring: r.cells[1]
           };
+          if (r.cells[2].trim().length > 0) {
+            vote.comment = { text: r.cells[2] };
+          }
+          if (r.cells[3].trim().length > 0) {
+            vote.tags = [r.cells[3]];
+          }
+          return vote;
         });
         let voteCredentialized: VoteCredentialized = {
           credentials: voteCredentials,
@@ -245,11 +259,105 @@ export default class BYOR_Setup {
       )
       .toPromise();
   }
+
+  @Step('Move <votingEventName> to the next step in the flow')
+  public moveToNexFlowStep(votingEventName: string) {
+    const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
+    return moveToNexFlowStep(votingEventId, this.executionContext.token)
+      .pipe(
+        tap((data) => {
+          expect(data.error).to.be.undefined;
+        })
+      )
+      .toPromise();
+  }
+
+  @Step('Fetch voting event <votingEventName> to see all votes and comments')
+  public getVotingEvent(votingEventName: string) {
+    const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
+    return getVotingEvent(votingEventId)
+      .pipe(
+        tap((data) => {
+          expect(data.error).to.be.undefined;
+        }),
+        tap((votingEvent) => {
+          const totalNumberOfVotes = votingEvent.technologies.reduce((acc, tech) => {
+            acc = tech.numberOfVotes ? acc + tech.numberOfVotes : acc;
+            return acc;
+          }, 0);
+          expect(totalNumberOfVotes).equal(12); // in total Hare, Snail and Wise Man have posted 12 votes
+          const totalNumberOfComments = votingEvent.technologies.reduce((acc, tech) => {
+            acc = tech.numberOfComments ? acc + tech.numberOfComments : acc;
+            return acc;
+          }, 0);
+          expect(totalNumberOfComments).equal(9); // in total Hare, Snail and Wise Man have posted 9 comments
+        }),
+        tap((votingEvent) => (this.executionContext.selectedVotingEvent = votingEvent))
+      )
+      .toPromise();
+  }
+
+  @Step('Look at the details of the votes for <technologyName> in event <votingEventName>')
+  public getVotesWithCommentsForTechAndEvent(technologyName: string, votingEventName: string) {
+    return this._getVotesWithCommentsForTechAndEvent(technologyName, votingEventName)
+      .pipe(
+        tap((votes: Vote[]) => {
+          expect(votes.length).equal(2); // 2 votes have been posted on Data Lake
+          votes.forEach((v) => expect(v.comment).to.be.not.undefined);
+        }),
+        tap((votes: Vote[]) => {
+          this.executionContext.votesOnSelectedTechnology = votes;
+        })
+      )
+      .toPromise();
+  }
+
+  private _getVotesWithCommentsForTechAndEvent(technologyName: string, votingEventName: string) {
+    const technologyId = this.executionContext.selectedVotingEvent.technologies.find((tech) => tech.name === technologyName)._id;
+    const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
+    return getVotesWithCommentsForTechAndEvent(technologyId, votingEventId, this.executionContext.token).pipe(
+      tap((data) => {
+        expect(data.error).to.be.undefined;
+      })
+    );
+  }
+
+  @Step('Respond <commentText> to the first comment of <voterNickname>')
+  public addReplyToVoteComment(commentText: string, voterNickname: string) {
+    const selectedVote = this.executionContext.votesOnSelectedTechnology.find(
+      (vote) => vote.voterId.nickname === voterNickname.toUpperCase()
+    );
+    const voteId = selectedVote._id;
+    const replay: Comment = { text: commentText };
+    const commentReceivingReplyId = selectedVote.comment.id;
+    return addReplyToVoteComment(voteId, replay, commentReceivingReplyId, this.executionContext.token)
+      .pipe(
+        tap((data) => {
+          expect(data.error).to.be.undefined;
+        })
+      )
+      .toPromise();
+  }
+
+  @Step('Look at details of <technologyName> in event <votingEventName> after <userId> added a replay to a comment of <voterNickname>')
+  public getVotesWithCommentsForTechAndEventAfterOneReplayAdded(
+    technologyName: string,
+    votingEventName: string,
+    userId: string,
+    voterNickname: string
+  ) {
+    return this._getVotesWithCommentsForTechAndEvent(technologyName, votingEventName)
+      .pipe(
+        tap((votes: Vote[]) => {
+          const selectedVote = votes.find((vote) => vote.voterId.nickname === voterNickname.toUpperCase());
+          expect(selectedVote.comment.replies).to.be.not.undefined;
+          expect(selectedVote.comment.replies.length).equal(1);
+          expect(selectedVote.comment.replies[0].author).equal(userId);
+        }),
+        tap((votes: Vote[]) => {
+          this.executionContext.votesOnSelectedTechnology = votes;
+        })
+      )
+      .toPromise();
+  }
 }
-
-type ProtoTable<T> = {
-  rows: Array<ProtoTableRow<T>>;
-  headers: ProtoTableRow<T>;
-};
-
-type ProtoTableRow<T> = { cells: T[] };

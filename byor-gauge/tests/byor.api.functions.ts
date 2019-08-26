@@ -177,3 +177,19 @@ export function addReplyToVoteComment(voteId: string, reply: Comment, commentRec
   let body = { service: 'addReplyToVoteComment', voteId, reply, commentReceivingReplyId };
   return createPostRequestObs(body, headers);
 }
+
+export function addCommentToTech(commentText: string, technologyId: string, votingEventId: string, headers: any) {
+  let body = { service: 'addCommentToTech', _id: votingEventId, technologyId, comment: commentText };
+  return createPostRequestObs(body, headers);
+}
+
+export function addReplyToTechComment(
+  reply: Comment,
+  technologyId: string,
+  votingEventId: string,
+  commentReceivingReplyId: string,
+  headers: any
+) {
+  let body = { service: 'addReplyToTechComment', votingEventId, technologyId, reply, commentReceivingReplyId };
+  return createPostRequestObs(body, headers);
+}

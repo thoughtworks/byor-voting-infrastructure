@@ -167,6 +167,23 @@ Kent is curious to see what people said about "Data Lake" and decides to look at
 Reading the comments he decides to respond to the comment of "Hare" who wrote 'sorta' as comment, while Kent is a fan of Data Lakes
 * Respond "Data lakes are really great" to the first comment of "Hare"
 
-## A second architect logs in and sees the new comment
+## A second architect logs in and sees the reply to the comment
 Alonzo, a Senior Architect at the SmartCompany logs in, open the details of Data Lake and sees the comment added by Kent.
-* Look at details of "Data Lake" in event "FirstVotingEventForTheSmartCompany" after "kent@smart.com" added a replay to a comment of "Hare"
+* Login BYOR with user id "alonzo@smart.com" and pwd "alonzo"
+* Look at details of "Data Lake" in event "FirstVotingEventForTheSmartCompany" after "kent@smart.com" added a reply to the comment in the vote of "Hare"
+
+## An architect then adds a comment to a Technology
+Alonzo wants also to leave a comment regarding "Git", which he thinks is a great tool. The comment is on the Technology and is not
+related to any comment expressed by voters in their votes.
+* Comment "This is really a great tool" for "Git"
+
+## A second architect reads the comment on a technology and adds a reply
+Later Alan, another architect, logs in, sees the comment from Alonzo on "Git" and adds a reply.
+* Login BYOR with user id "alan@smart.com" and pwd "alan"
+* Look at details of "Git" in event "FirstVotingEventForTheSmartCompany" after "alonzo@smart.com" added a comment
+* Reply "I thing that with Git Linus really failed" to the comment of "alonzo@smart.com"
+
+## A third architect logs in and sees the reply to the comment on a technology
+In the evening Rebecca logs in again and sees the reply of Alan to the comment of Alonzo on "Git".
+* Login BYOR with user id "rebecca@smart.com" and pwd "rebecca"
+* Look at details of "Git" in event "FirstVotingEventForTheSmartCompany" after "alan@smart.com" replied to a comment on the technology

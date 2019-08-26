@@ -25,13 +25,16 @@ import {
   calculateBlips,
   moveToNexFlowStep,
   getVotesWithCommentsForTechAndEvent,
-  addReplyToVoteComment
+  addReplyToVoteComment,
+  addCommentToTech,
+  addReplyToTechComment
 } from './byor.api.functions';
 import { VoteCredentialized } from '../models/vote-credentialized';
 import { VoteCredentials } from '../models/vote-credentials';
 import { Vote } from '../models/vote';
 import { VotingEvent } from '../models/voting-event';
 import { Comment } from '../models/comment';
+import { Technology } from '../models/technology';
 
 export default class BYOR_APIs {
   private executionContext: {
@@ -40,7 +43,15 @@ export default class BYOR_APIs {
     votingEventNameIdMap: { [name: string]: string };
     selectedVotingEvent: VotingEvent;
     votesOnSelectedTechnology: Vote[];
-  } = { token: null, initiativeNameIdMap: {}, votingEventNameIdMap: {}, selectedVotingEvent: null, votesOnSelectedTechnology: null };
+    selectedTechnology: Technology;
+  } = {
+    token: null,
+    initiativeNameIdMap: {},
+    votingEventNameIdMap: {},
+    selectedVotingEvent: null,
+    votesOnSelectedTechnology: null,
+    selectedTechnology: null
+  };
 
   @Step('Set administrator with userId <userId> and pwd <pwd>.')
   public setAdministrator(userId: string, pwd: string) {
@@ -339,7 +350,9 @@ export default class BYOR_APIs {
       .toPromise();
   }
 
-  @Step('Look at details of <technologyName> in event <votingEventName> after <userId> added a replay to a comment of <voterNickname>')
+  @Step(
+    'Look at details of <technologyName> in event <votingEventName> after <userId> added a reply to the comment in the vote of <voterNickname>'
+  )
   public getVotesWithCommentsForTechAndEventAfterOneReplayAdded(
     technologyName: string,
     votingEventName: string,
@@ -357,6 +370,74 @@ export default class BYOR_APIs {
         tap((votes: Vote[]) => {
           this.executionContext.votesOnSelectedTechnology = votes;
         })
+      )
+      .toPromise();
+  }
+
+  @Step('Comment <commentText> for <technologyName>')
+  public addCommentToTech(commentText: string, technologyName: string) {
+    const technologyId = this.executionContext.selectedVotingEvent.technologies.find((tech) => tech.name === technologyName)._id;
+    const votingEventId = this.executionContext.selectedVotingEvent._id;
+    return addCommentToTech(commentText, technologyId, votingEventId, this.executionContext.token)
+      .pipe(
+        tap((data) => {
+          expect(data.error).to.be.undefined;
+        })
+      )
+      .toPromise();
+  }
+
+  @Step('Look at details of <technologyName> in event <votingEventName> after <userId> added a comment')
+  public getDetailsWithCommentsForTechAndEventAfterOneCommentAdded(technologyName: string, votingEventName: string, userId: string) {
+    const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
+    return getVotingEvent(votingEventId)
+      .pipe(
+        tap((data) => {
+          expect(data.error).to.be.undefined;
+        }),
+        tap((votingEvent) => (this.executionContext.selectedVotingEvent = votingEvent)),
+        map((votingEvent: VotingEvent) => votingEvent.technologies.find((tech) => tech.name === technologyName)),
+        tap((technology) => {
+          expect(technology.comments).to.be.not.undefined;
+          expect(technology.comments.length).equal(1);
+          expect(technology.comments[0].author).equal(userId);
+        }),
+        tap((technology) => (this.executionContext.selectedTechnology = technology))
+      )
+      .toPromise();
+  }
+
+  @Step('Reply <replyText> to the comment of <userId>')
+  public addReplyToTechComment(replyText: string, userId: string) {
+    const reply: Comment = { text: replyText };
+    const technologyId = this.executionContext.selectedTechnology._id;
+    const votingEventId = this.executionContext.selectedVotingEvent._id;
+    const commentReceivingReplyId = this.executionContext.selectedTechnology.comments.find((c) => c.author === userId).id;
+    return addReplyToTechComment(reply, technologyId, votingEventId, commentReceivingReplyId, this.executionContext.token)
+      .pipe(
+        tap((data) => {
+          expect(data.error).to.be.undefined;
+        })
+      )
+      .toPromise();
+  }
+
+  @Step('Look at details of <technologyName> in event <votingEventName> after <userId1> replied to a comment on the technology')
+  public getDetailsWithCommentsForTechAndEventAfterOneReplyAdded(technologyName: string, votingEventName: string, userId: string) {
+    const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
+    return getVotingEvent(votingEventId)
+      .pipe(
+        tap((data) => {
+          expect(data.error).to.be.undefined;
+        }),
+        tap((votingEvent) => (this.executionContext.selectedVotingEvent = votingEvent)),
+        map((votingEvent: VotingEvent) => votingEvent.technologies.find((tech) => tech.name === technologyName)),
+        tap((technology) => {
+          expect(technology.comments[0].replies).to.be.not.undefined;
+          expect(technology.comments[0].replies.length).equal(1);
+          expect(technology.comments[0].replies[0].author).equal(userId);
+        }),
+        tap((technology) => (this.executionContext.selectedTechnology = technology))
       )
       .toPromise();
   }

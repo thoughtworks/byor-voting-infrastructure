@@ -1,16 +1,17 @@
 import { normalize } from 'path';
 
-import { map, concatMap, toArray, skip } from 'rxjs/operators';
+import { map, concatMap, toArray, skip, filter } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 import { createPostRequestObs } from './byor.api.functions.utils';
 import { readLinesObs, readLineObs } from 'observable-fs';
 
-import { Technology } from '../models/technology';
+import { Technology, Recommendation } from '../models/technology';
 import { VoteCredentialized } from '../models/vote-credentialized';
-import { Observable } from 'rxjs';
 import { Vote } from '../models/vote';
 import { VotingEvent } from '../models/voting-event';
 import { Comment } from '../models/comment';
+import { Blip } from '../models/blip';
 
 export function setAdministrator(userId: string, pwd: string, defaultAdminID: string, defaultAdminPwd: string) {
   const body = {
@@ -28,6 +29,23 @@ export function login(user: string, pwd: string) {
     service: 'authenticateOrSetPwdIfFirstTime',
     user,
     pwd
+  };
+  return createPostRequestObs(body).pipe(
+    map((resp) => resp.data),
+    map((data) => {
+      const token = data.token;
+      const pwdInserted = data.pwdInserted;
+      return { token, pwdInserted };
+    })
+  );
+}
+
+export function authenticateForVotingEvent(user: string, pwd: string, votingEventId: string) {
+  const body = {
+    service: 'authenticateForVotingEvent',
+    user,
+    pwd,
+    votingEventId
   };
   return createPostRequestObs(body).pipe(
     map((data) => {
@@ -137,7 +155,7 @@ export function openVotingEvent(votingEventId: string, headers: any) {
   return createPostRequestObs(body, headers);
 }
 
-export function getVotingEvent(votingEventId: string): Observable<VotingEvent & { error: any }> {
+export function getVotingEvent(votingEventId: string): Observable<{ data?: VotingEvent; error?: any }> {
   let body = { service: 'getVotingEvent', _id: votingEventId };
   return createPostRequestObs(body);
 }
@@ -148,7 +166,7 @@ export function saveVotes(voteCredentialized: VoteCredentialized) {
   return createPostRequestObs(body);
 }
 
-export function getVotes(eventId: any, voterId?: { nickname?: string; userId?: string }): Observable<Vote[] & { error: any }> {
+export function getVotes(eventId: any, voterId?: { nickname?: string; userId?: string }): Observable<{ data?: Vote[]; error?: any }> {
   let body = { service: 'getVotes', eventId, voterId };
   return createPostRequestObs(body);
 }
@@ -158,7 +176,7 @@ export function closeVotingEvent(votingEventId: string, headers: any) {
   return createPostRequestObs(body, headers);
 }
 
-export function calculateBlips(votingEventId: string, headers: any) {
+export function calculateBlips(votingEventId: string, headers: any): Observable<{ data?: Blip[]; error?: any }> {
   let body = { service: 'calculateBlips', votingEvent: { _id: votingEventId } };
   return createPostRequestObs(body, headers);
 }
@@ -168,7 +186,11 @@ export function moveToNexFlowStep(votingEventId: string, headers: any) {
   return createPostRequestObs(body, headers);
 }
 
-export function getVotesWithCommentsForTechAndEvent(technologyId: string, votingEventId: string, headers: any) {
+export function getVotesWithCommentsForTechAndEvent(
+  technologyId: string,
+  votingEventId: string,
+  headers: any
+): Observable<{ data?: Vote[]; error?: any }> {
   let body = { service: 'getVotesWithCommentsForTechAndEvent', technologyId, eventId: votingEventId };
   return createPostRequestObs(body, headers);
 }
@@ -191,5 +213,25 @@ export function addReplyToTechComment(
   headers: any
 ) {
   let body = { service: 'addReplyToTechComment', votingEventId, technologyId, reply, commentReceivingReplyId };
+  return createPostRequestObs(body, headers);
+}
+
+export function getBlipHistoryForTech(techName: string): Observable<{ data?: Blip[]; error?: any }> {
+  let body = { service: 'getBlipHistoryForTech', techName };
+  return createPostRequestObs(body);
+}
+
+export function setRecommendationAuthorForTech(technologyName: string, votingEventId: string, headers: any) {
+  let body = { service: 'setRecommendationAuthor', votingEventId, technologyName };
+  return createPostRequestObs(body, headers);
+}
+
+export function saveRecommendation(technologyName: string, votingEventId: string, recommendation: Recommendation, headers: any) {
+  let body = { service: 'setRecommendation', votingEventId, technologyName, recommendation };
+  return createPostRequestObs(body, headers);
+}
+
+export function cancelRecommendationForTech(technologyName: string, votingEventId: string, headers: any) {
+  let body = { service: 'resetRecommendation', votingEventId, technologyName };
   return createPostRequestObs(body, headers);
 }

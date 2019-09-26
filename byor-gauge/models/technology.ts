@@ -8,4 +8,12 @@ export interface Technology {
   numberOfVotes?: number;
   numberOfComments?: number;
   comments?: Comment[];
+  recommendation?: Recommendation;
+}
+
+export interface Recommendation {
+  author?: string;
+  ring?: string;
+  text?: string;
+  timestamp?: string;
 }

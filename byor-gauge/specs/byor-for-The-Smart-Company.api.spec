@@ -2,7 +2,8 @@
 This spec describes a way the BYOR can be used in a Company.
 This spec aims to specify and test only the APIs provided by the back end.
 
-// https://bugdiver.dev/gauge-ts/#/
+It uses guage with Typescript with the support of the following package
+https://bugdiver.dev/gauge-ts/#/
 
 
 One evenening, the CEO of the SmartCompany attended at a presentation of the BYOR application and decided to try
@@ -112,7 +113,7 @@ Then a "Wise Man" votes.
    |Anemic REST|adopt|go4it  |Prod Experience |
    |Data Lake  |adopt|go4it  |Personal Project|
    |Prettier   |hold |STOPPP |Training        |
-   |Swagger    |hold |       |                |
+   |TypeScript |adopt|great  |Prod Experience |
 
 ## Some correct their first vote
 After having saved its vote, "Snails" decides to add one technology, "GraphQL" which recently it used with success,
@@ -158,8 +159,8 @@ counting the votes per ring and per tag as well as counting the comments.
 ## One architect responds to a comment on a vote
 Kent is the first one to login to the BYOR app. He first takes a glance to the list of technologies, the votes and the comments cast
 for each of the technologies
-* Login BYOR with user id "kent@smart.com" and pwd "kent"
-* Fetch voting event "FirstVotingEventForTheSmartCompany" to see all votes and comments
+* Login BYOR with user id "kent@smart.com" and pwd "kent" for "FirstVotingEventForTheSmartCompany"
+* See all votes and comments for voting event "FirstVotingEventForTheSmartCompany"
 
 Kent is curious to see what people said about "Data Lake" and decides to look at the details of the votes for Data lake.
 * Look at the details of the votes for "Data Lake" in event "FirstVotingEventForTheSmartCompany"
@@ -169,7 +170,7 @@ Reading the comments he decides to respond to the comment of "Hare" who wrote 's
 
 ## A second architect logs in and sees the reply to the comment
 Alonzo, a Senior Architect at the SmartCompany logs in, open the details of Data Lake and sees the comment added by Kent.
-* Login BYOR with user id "alonzo@smart.com" and pwd "alonzo"
+* Login BYOR with user id "alonzo@smart.com" and pwd "alonzo" for "FirstVotingEventForTheSmartCompany"
 * Look at details of "Data Lake" in event "FirstVotingEventForTheSmartCompany" after "kent@smart.com" added a reply to the comment in the vote of "Hare"
 
 ## An architect then adds a comment to a Technology
@@ -179,11 +180,55 @@ related to any comment expressed by voters in their votes.
 
 ## A second architect reads the comment on a technology and adds a reply
 Later Alan, another architect, logs in, sees the comment from Alonzo on "Git" and adds a reply.
-* Login BYOR with user id "alan@smart.com" and pwd "alan"
+* Login BYOR with user id "alan@smart.com" and pwd "alan" for "FirstVotingEventForTheSmartCompany"
 * Look at details of "Git" in event "FirstVotingEventForTheSmartCompany" after "alonzo@smart.com" added a comment
 * Reply "I thing that with Git Linus really failed" to the comment of "alonzo@smart.com"
 
 ## A third architect logs in and sees the reply to the comment on a technology
 In the evening Rebecca logs in again and sees the reply of Alan to the comment of Alonzo on "Git".
-* Login BYOR with user id "rebecca@smart.com" and pwd "rebecca"
+* Login BYOR with user id "rebecca@smart.com" and pwd "rebecca" for "FirstVotingEventForTheSmartCompany"
 * Look at details of "Git" in event "FirstVotingEventForTheSmartCompany" after "alan@smart.com" replied to a comment on the technology
+
+## The event is moved from the conversation step to the recommendation step
+A week later, after few days the event was in the "conversation step", Rebecca and Martina decide it is time to move to the last step,
+the "recommendation step", where the "champions" provide the final recommendation for each technology.
+The "champions" are a subgroup of architects with specific seniority to take the responsibility of signing the final recommendation,
+and this group is assigned to the users of BYOR app when the users are loaded, which happens during the configuration of the event.
+Martina logs in and moves the voting event to the recommendation step
+* Login BYOR with user id "martina@smart.com" and pwd "martina"
+* Move "FirstVotingEventForTheSmartCompany" to the next step in the flow
+
+## The first recommendation is saved
+The first champion who logs in to enter a recommendation is Alonzo
+* Login BYOR with user id "alonzo@smart.com" and pwd "alonzo" for "FirstVotingEventForTheSmartCompany"
+Alonzo has agreed with the other champions that he will finalize the recommendation of "Data Lake", so fetches the
+details of such technology
+* Look at the details of the votes for "Data Lake" in event "FirstVotingEventForTheSmartCompany"
+To facilitate the work Alonzo wants to read also the previous Blips on this technology
+* Fetch old blips for "Data Lake"
+Alonzo now is ready to write the final recommendation for Data Lake and therefore set himself as the owner of such
+final recommendation
+* Signup for recommendation for "Data Lake" in event "FirstVotingEventForTheSmartCompany"
+Then he writes the actual recommendation, stating that this is a good technology, and saves it
+* Recommend "adopt" as ring for "Data Lake" because "This is really a cool tech" for event "FirstVotingEventForTheSmartCompany"
+
+## Another Champion tries to give a recommendation on a technology which has already a recommendation
+Alan did not get that Alonzo volounteered to provide the recommendation on Data Lake. He would like to do it himself.
+He logs into the system
+* Login BYOR with user id "alan@smart.com" and pwd "alan" for "FirstVotingEventForTheSmartCompany"
+and tries to signup as author for the recommendation but with no success since Alonzo already gave his recommendation
+* Try to signup for the recommendation of "Data Lake" in event "FirstVotingEventForTheSmartCompany" but the system does not allow
+
+## The author of a recommendation cancels the recommendation and another Champion takes this task
+Alan sees that Alonzo has already given the recommendation. He call then Alonzo and tell him that he would really like to
+be the author of the recommendation for Data Lake.
+Alonzo, who is a mature man, accepts. He logs into the system
+* Login BYOR with user id "alonzo@smart.com" and pwd "alonzo" for "FirstVotingEventForTheSmartCompany"
+and then cancels his recommendation
+* Cancel the recommendation for "Data Lake" in event "FirstVotingEventForTheSmartCompany"
+Now Alan can actually login and set its own recommendation
+* Login BYOR with user id "alan@smart.com" and pwd "alan" for "FirstVotingEventForTheSmartCompany"
+* Recommend "hold" as ring for "Data Lake" because "I, Alan, tried and did not work" for event "FirstVotingEventForTheSmartCompany"
+In the evening Rebecca logs in and reads the recommendation from Alan
+* Login BYOR with user id "rebecca@smart.com" and pwd "rebecca" for "FirstVotingEventForTheSmartCompany"
+* Read the recommendation of "alan@smart.com" for "Data Lake" for event "FirstVotingEventForTheSmartCompany": "hold" as ring and text "I, Alan, tried and did not work"

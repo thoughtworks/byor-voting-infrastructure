@@ -13,6 +13,6 @@ export function createPostRequestObs(body: any, authToken?: any) {
         throw new Error(errMsg);
       }
     }),
-    map((resp) => resp.body.data)
+    map((resp) => resp.body)
   );
 }

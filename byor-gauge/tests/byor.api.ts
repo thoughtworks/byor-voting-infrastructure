@@ -27,14 +27,18 @@ import {
   getVotesWithCommentsForTechAndEvent,
   addReplyToVoteComment,
   addCommentToTech,
-  addReplyToTechComment
+  addReplyToTechComment,
+  getBlipHistoryForTech,
+  setRecommendationAuthorForTech,
+  saveRecommendation,
+  cancelRecommendationForTech
 } from './byor.api.functions';
 import { VoteCredentialized } from '../models/vote-credentialized';
 import { VoteCredentials } from '../models/vote-credentials';
 import { Vote } from '../models/vote';
 import { VotingEvent } from '../models/voting-event';
 import { Comment } from '../models/comment';
-import { Technology } from '../models/technology';
+import { Technology, Recommendation } from '../models/technology';
 
 export default class BYOR_APIs {
   private executionContext: {
@@ -82,9 +86,12 @@ export default class BYOR_APIs {
   public createInitiative(initiativeName: string) {
     return createInitiative(initiativeName, this.executionContext.token)
       .pipe(
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
+        }),
+        map((resp) => resp.data),
         tap((data) => {
           expect(data).to.be.not.undefined; // contains the initiative id
-          expect(data.error).to.be.undefined;
         }),
         tap((data) => {
           this.executionContext.initiativeNameIdMap[initiativeName] = data;
@@ -98,8 +105,8 @@ export default class BYOR_APIs {
     const initiativeId = this.executionContext.initiativeNameIdMap[initiativeName];
     return addAdministratorToInitiative(initiativeId, administrator, this.executionContext.token)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         })
       )
       .toPromise();
@@ -109,9 +116,12 @@ export default class BYOR_APIs {
   public createVotingEvent(votingEventName: string, initiativeName: string, configFileName: string) {
     return createVotingEvent(votingEventName, initiativeName, configFileName, this.executionContext.token)
       .pipe(
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
+        }),
+        map((resp) => resp.data),
         tap((data) => {
           expect(data).to.be.not.undefined; // contains the votingEvent id
-          expect(data.error).to.be.undefined;
         }),
         tap((data) => {
           this.executionContext.votingEventNameIdMap[votingEventName] = data;
@@ -125,8 +135,8 @@ export default class BYOR_APIs {
     const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
     return addAdministratorToVotingEvent(votingEventId, administrator, this.executionContext.token)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         })
       )
       .toPromise();
@@ -137,8 +147,8 @@ export default class BYOR_APIs {
     const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
     return setTechnologiesForVotingEvent(votingEventId, this.executionContext.token)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         })
       )
       .toPromise();
@@ -149,8 +159,8 @@ export default class BYOR_APIs {
     const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
     return loadUsersForVotingEvent(votingEventId, this.executionContext.token)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         })
       )
       .toPromise();
@@ -161,8 +171,8 @@ export default class BYOR_APIs {
     const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
     return openVotingEvent(votingEventId, this.executionContext.token)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         })
       )
       .toPromise();
@@ -172,8 +182,8 @@ export default class BYOR_APIs {
   public saveVotes(voterNickname: string, votingEventName: string, votesTable: ProtoTable<string>) {
     return this._saveVotes(voterNickname, votingEventName, votesTable)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         })
       )
       .toPromise();
@@ -183,8 +193,8 @@ export default class BYOR_APIs {
   public updateVote(voterNickname: string, votingEventName: string, votesTable: ProtoTable<string>) {
     return this._saveVotes(voterNickname, votingEventName, votesTable, true)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         })
       )
       .toPromise();
@@ -193,6 +203,10 @@ export default class BYOR_APIs {
   private _saveVotes(voterNickname: string, votingEventName: string, votesTable: ProtoTable<string>, override = false) {
     const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
     return getVotingEvent(votingEventId).pipe(
+      tap((resp) => {
+        expect(resp.error).to.be.undefined;
+      }),
+      map((resp) => resp.data),
       map((data) => data.technologies),
       map((technologies) => {
         const voteCredentials: VoteCredentials = {
@@ -234,8 +248,8 @@ export default class BYOR_APIs {
     const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
     return closeVotingEvent(votingEventId, this.executionContext.token)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         })
       )
       .toPromise();
@@ -246,9 +260,10 @@ export default class BYOR_APIs {
     const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
     return getVotes(votingEventId)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         }),
+        map((resp) => resp.data),
         tap((votes) => {
           expect(votes.length).equal(12); // 12 are the votes posted in the voting session
         })
@@ -261,11 +276,12 @@ export default class BYOR_APIs {
     const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
     return calculateBlips(votingEventId, this.executionContext.token)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         }),
+        map((resp) => resp.data),
         tap((blips) => {
-          expect(blips.length).equal(5); // The votes posted are for 5 different technologies and therefore generate 5 blips
+          expect(blips.length).equal(6); // The votes posted are for 6 different technologies and therefore generate 5 blips
         })
       )
       .toPromise();
@@ -276,21 +292,43 @@ export default class BYOR_APIs {
     const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
     return moveToNexFlowStep(votingEventId, this.executionContext.token)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         })
       )
       .toPromise();
   }
+  @Step('Login BYOR with user id <userId> and pwd <pwd> for <votingEventName>')
+  public authenticateForVotingEvent(userId: string, pwd: string, votingEventName: string) {
+    return login(userId, pwd)
+      .pipe(
+        tap(({ token, pwdInserted }: { token: string; pwdInserted: boolean }) => {
+          expect(token).to.be.not.undefined;
+          expect(pwdInserted).to.be.not.undefined;
+          this.executionContext.token = token;
+        }),
+        concatMap(() => {
+          const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
+          return getVotingEvent(votingEventId);
+        }),
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
+        }),
+        map((resp) => resp.data),
+        tap((votingEvent) => (this.executionContext.selectedVotingEvent = votingEvent))
+      )
+      .toPromise();
+  }
 
-  @Step('Fetch voting event <votingEventName> to see all votes and comments')
+  @Step('See all votes and comments for voting event <votingEventName>')
   public getVotingEvent(votingEventName: string) {
     const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
     return getVotingEvent(votingEventId)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         }),
+        map((resp) => resp.data),
         tap((votingEvent) => {
           const totalNumberOfVotes = votingEvent.technologies.reduce((acc, tech) => {
             acc = tech.numberOfVotes ? acc + tech.numberOfVotes : acc;
@@ -301,9 +339,8 @@ export default class BYOR_APIs {
             acc = tech.numberOfComments ? acc + tech.numberOfComments : acc;
             return acc;
           }, 0);
-          expect(totalNumberOfComments).equal(9); // in total Hare, Snail and Wise Man have posted 9 comments
-        }),
-        tap((votingEvent) => (this.executionContext.selectedVotingEvent = votingEvent))
+          expect(totalNumberOfComments).equal(10); // in total Hare, Snail and Wise Man have posted 10 comments
+        })
       )
       .toPromise();
   }
@@ -312,6 +349,10 @@ export default class BYOR_APIs {
   public getVotesWithCommentsForTechAndEvent(technologyName: string, votingEventName: string) {
     return this._getVotesWithCommentsForTechAndEvent(technologyName, votingEventName)
       .pipe(
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
+        }),
+        map((resp) => resp.data),
         tap((votes: Vote[]) => {
           expect(votes.length).equal(2); // 2 votes have been posted on Data Lake
           votes.forEach((v) => expect(v.comment).to.be.not.undefined);
@@ -343,8 +384,8 @@ export default class BYOR_APIs {
     const commentReceivingReplyId = selectedVote.comment.id;
     return addReplyToVoteComment(voteId, replay, commentReceivingReplyId, this.executionContext.token)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         })
       )
       .toPromise();
@@ -361,6 +402,10 @@ export default class BYOR_APIs {
   ) {
     return this._getVotesWithCommentsForTechAndEvent(technologyName, votingEventName)
       .pipe(
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
+        }),
+        map((resp) => resp.data),
         tap((votes: Vote[]) => {
           const selectedVote = votes.find((vote) => vote.voterId.nickname === voterNickname.toUpperCase());
           expect(selectedVote.comment.replies).to.be.not.undefined;
@@ -380,8 +425,8 @@ export default class BYOR_APIs {
     const votingEventId = this.executionContext.selectedVotingEvent._id;
     return addCommentToTech(commentText, technologyId, votingEventId, this.executionContext.token)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         })
       )
       .toPromise();
@@ -392,10 +437,10 @@ export default class BYOR_APIs {
     const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
     return getVotingEvent(votingEventId)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         }),
-        tap((votingEvent) => (this.executionContext.selectedVotingEvent = votingEvent)),
+        map((resp) => resp.data),
         map((votingEvent: VotingEvent) => votingEvent.technologies.find((tech) => tech.name === technologyName)),
         tap((technology) => {
           expect(technology.comments).to.be.not.undefined;
@@ -415,22 +460,23 @@ export default class BYOR_APIs {
     const commentReceivingReplyId = this.executionContext.selectedTechnology.comments.find((c) => c.author === userId).id;
     return addReplyToTechComment(reply, technologyId, votingEventId, commentReceivingReplyId, this.executionContext.token)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
-        })
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
+        }),
+        map((resp) => resp.data)
       )
       .toPromise();
   }
 
-  @Step('Look at details of <technologyName> in event <votingEventName> after <userId1> replied to a comment on the technology')
+  @Step('Look at details of <technologyName> in event <votingEventName> after <userId> replied to a comment on the technology')
   public getDetailsWithCommentsForTechAndEventAfterOneReplyAdded(technologyName: string, votingEventName: string, userId: string) {
     const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
     return getVotingEvent(votingEventId)
       .pipe(
-        tap((data) => {
-          expect(data.error).to.be.undefined;
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
         }),
-        tap((votingEvent) => (this.executionContext.selectedVotingEvent = votingEvent)),
+        map((resp) => resp.data),
         map((votingEvent: VotingEvent) => votingEvent.technologies.find((tech) => tech.name === technologyName)),
         tap((technology) => {
           expect(technology.comments[0].replies).to.be.not.undefined;
@@ -438,6 +484,109 @@ export default class BYOR_APIs {
           expect(technology.comments[0].replies[0].author).equal(userId);
         }),
         tap((technology) => (this.executionContext.selectedTechnology = technology))
+      )
+      .toPromise();
+  }
+
+  @Step('Fetch old blips for <technologyName>')
+  public getBlipHistoryForTech(technologyName: string) {
+    return getBlipHistoryForTech(technologyName)
+      .pipe(
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
+        }),
+        map((resp) => resp.data),
+        tap((blips) => {
+          expect(blips.length).equal(3);
+        })
+      )
+      .toPromise();
+  }
+
+  @Step('Signup for recommendation for <technologyName> in event <votingEventName>')
+  public setRecommendationAuthorForTech(technologyName: string, votingEventName: string) {
+    const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
+    return setRecommendationAuthorForTech(technologyName, votingEventId, this.executionContext.token)
+      .pipe(
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
+        })
+      )
+      .toPromise();
+  }
+
+  @Step('Recommend <ring> as ring for <technologyName> because <recommendationText> for event <votingEventName>')
+  public saveRecommendation(ring: string, technologyName: string, recommendationText: string, votingEventName: string) {
+    const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
+    const recommendation: Recommendation = {
+      ring,
+      text: recommendationText
+    };
+    return saveRecommendation(technologyName, votingEventId, recommendation, this.executionContext.token)
+      .pipe(
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
+        })
+      )
+      .toPromise();
+  }
+
+  @Step('Try to signup for the recommendation of <technologyName> in event <votingEventName> but the system does not allow')
+  public failToSetRecommendationAuthorForTech(technologyName: string, votingEventName: string) {
+    const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
+    return setRecommendationAuthorForTech(technologyName, votingEventId, this.executionContext.token)
+      .pipe(
+        tap((resp) => {
+          expect(resp.error).to.be.not.undefined;
+          expect(resp.error.errorCode).to.equal('R-01');
+        })
+      )
+      .toPromise();
+  }
+
+  @Step('Cancel the recommendation for <technologyName> in event <votingEventName>')
+  public cancelRecommendationForTech(technologyName: string, votingEventName: string) {
+    const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
+    return cancelRecommendationForTech(technologyName, votingEventId, this.executionContext.token)
+      .pipe(
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
+        })
+      )
+      .toPromise();
+  }
+
+  @Step(
+    'Read the recommendation of <author> for <technologyName> for event <votingEventName>: <ring> as ring and text <recommendationText>'
+  )
+  public readRecommendationForTech(
+    author: string,
+    technologyName: string,
+    votingEventName: string,
+    ring: string,
+    recommendationText: string
+  ) {
+    const votingEventId = this.executionContext.votingEventNameIdMap[votingEventName];
+    return getVotingEvent(votingEventId)
+      .pipe(
+        tap((resp) => {
+          expect(resp.error).to.be.undefined;
+        }),
+        map((resp) => resp.data),
+        map((vEvent) => vEvent.technologies.find((t) => t.name === technologyName)),
+        tap((tech) => {
+          expect(tech).to.be.not.undefined;
+        }),
+        map((tech) => tech.recommendation),
+        tap((recommendation) => {
+          expect(recommendation).to.be.not.undefined;
+          expect(recommendation.author).equal(author);
+          expect(recommendation.ring).equal(ring);
+          expect(recommendation.text).equal(recommendationText);
+        }),
+        tap((data) => {
+          console.log(data);
+        })
       )
       .toPromise();
   }

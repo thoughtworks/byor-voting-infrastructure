@@ -1,10 +1,14 @@
 import { httpPostRequestObs } from 'observable-http-request';
-import { tap, map, catchError } from 'rxjs/operators';
-import { throwError, of } from 'rxjs';
+import { tap, map, } from 'rxjs/operators';
+import { loggedUserId } from './loggedUserId';
 
-const byorServerUrl = 'http://localhost:3000/';
+const byorServerUrl = process.env['BYOR_SERVER_URL'] || 'http://localhost:3000/';
 
 export function createPostRequestObs(body: any, authToken?: any) {
+  // to be removed once aws lambda implementation is able to receive authentication header
+  console.log('loggedUserId', loggedUserId.loggedUserId);
+  body['userId'] = loggedUserId.loggedUserId;
+
   return httpPostRequestObs(byorServerUrl, body, authToken).pipe(
     tap((resp) => {
       if (resp.statusCode !== 200) {

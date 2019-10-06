@@ -39,6 +39,7 @@ import { Vote } from '../models/vote';
 import { VotingEvent } from '../models/voting-event';
 import { Comment } from '../models/comment';
 import { Technology, Recommendation } from '../models/technology';
+import { loggedUserId } from './loggedUserId';
 
 export default class BYOR_APIs {
   private executionContext: {
@@ -54,7 +55,7 @@ export default class BYOR_APIs {
     votingEventNameIdMap: {},
     selectedVotingEvent: null,
     votesOnSelectedTechnology: null,
-    selectedTechnology: null
+    selectedTechnology: null,
   };
 
   @Step('Set administrator with userId <userId> and pwd <pwd>.')
@@ -66,6 +67,8 @@ export default class BYOR_APIs {
 
   @Step('Login BYOR with user id <userId> and pwd <pwd>')
   public login(userId: string, pwd: string) {
+    // to be removed once aws lambda implementation is able to receive authentication header
+    loggedUserId.loggedUserId = userId;
     return login(userId, pwd)
       .pipe(
         tap(({ token, pwdInserted }: { token: string; pwdInserted: boolean }) => {
@@ -300,6 +303,8 @@ export default class BYOR_APIs {
   }
   @Step('Login BYOR with user id <userId> and pwd <pwd> for <votingEventName>')
   public authenticateForVotingEvent(userId: string, pwd: string, votingEventName: string) {
+    // to be removed once aws lambda implementation is able to receive authentication header
+    loggedUserId.loggedUserId = userId;
     return login(userId, pwd)
       .pipe(
         tap(({ token, pwdInserted }: { token: string; pwdInserted: boolean }) => {

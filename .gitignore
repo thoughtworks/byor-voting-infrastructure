@@ -12,3 +12,4 @@ terraform.tf
 terraform.tfvars
 variables.tf
 byor-gauge/commands.txt
+byor-gauge/.env

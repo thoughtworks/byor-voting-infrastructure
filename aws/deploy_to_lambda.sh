@@ -2,11 +2,18 @@
 
 set -e;
 
+export DOCKER_BUILDKIT=1
+
 echo "--[INFO] setting projects locations..."
 if [ -z "${CI}" ]; then
     tmp=..
 else
     tmp=tmp
+    export PULL_LATEST_FROM_GITHUB=YES
+    export AWS_S3_SETUP=YES
+    export DEPLOY_BYOR_SERVER=YES
+    export DEPLOY_BYOR_RADAR=YES
+    export DEPLOY_BYOR_VOTING_WEB_APP=YES
 fi
 BYOR_HOME=$(pwd)/${tmp}/build-your-own-radar
 BYOR_VOTING_INFRASTRUCTURE_HOME=$(pwd)
@@ -26,36 +33,50 @@ else
 fi
 IFS=',' read -r -a targets_list <<< "${targets}"
 
-
-echo "--[INFO] pulling latest changes..."
-cd ${BYOR_VOTING_INFRASTRUCTURE_HOME}/tmp
-echo "--[INFO] Pulling latest version of byor..."
-if [[ ! -d "${BYOR_HOME}" ]]; then
-    git clone https://github.com/thoughtworks/build-your-own-radar.git
+if [ -z $PULL_LATEST_FROM_GITHUB ]; then
+    echo "do you want to pull the lastest changes from github repos?
+1) (y)es
+2) (n)o
+enter either number or name, or press any other character to use the default (yes):"
+    read ans
+    case $ans in
+        n|2       ) export PULL_LATEST_FROM_GITHUB=NO ;;
+        y|1|""|* ) export PULL_LATEST_FROM_GITHUB=YES ;;
+    esac
 fi
-cd "${BYOR_HOME}"
-git checkout master
-git pull
-git fetch origin pull/101/head:pr101
-git checkout pr101 | tee ${BYOR_VOTING_INFRASTRUCTURE_HOME}/logs/byor.log
+if [ "${PULL_LATEST_FROM_GITHUB}" == "YES" ]; then 
+    echo "--[INFO] pulling latest changes..."
+    cd ${BYOR_VOTING_INFRASTRUCTURE_HOME}/tmp
+    echo "--[INFO] Pulling latest version of byor..."
+    if [[ ! -d "${BYOR_HOME}" ]]; then
+        git clone https://github.com/thoughtworks/build-your-own-radar.git
+    fi
+    cd "${BYOR_HOME}"
+    git checkout master
+    git pull
+    git fetch origin pull/101/head:pr101
+    git checkout pr101 | tee ${BYOR_VOTING_INFRASTRUCTURE_HOME}/logs/byor.log
 
-cd ${BYOR_VOTING_INFRASTRUCTURE_HOME}/tmp
-echo "--[INFO] Pulling latest version of byor-voting-server..."
-if [[ ! -d "${BYOR_VOTING_SERVER_HOME}" ]]; then
-    git clone https://github.com/thoughtworks/byor-voting-server.git
-fi
-cd "${BYOR_VOTING_SERVER_HOME}"
-git fetch
-git pull | tee ${BYOR_VOTING_INFRASTRUCTURE_HOME}/logs/byor-voting-server.log
+    cd ${BYOR_VOTING_INFRASTRUCTURE_HOME}/tmp
+    echo "--[INFO] Pulling latest version of byor-voting-server..."
+    if [[ ! -d "${BYOR_VOTING_SERVER_HOME}" ]]; then
+        git clone https://github.com/thoughtworks/byor-voting-server.git
+    fi
+    cd "${BYOR_VOTING_SERVER_HOME}"
+    git fetch
+    git pull | tee ${BYOR_VOTING_INFRASTRUCTURE_HOME}/logs/byor-voting-server.log
 
-cd ${BYOR_VOTING_INFRASTRUCTURE_HOME}/tmp
-echo "--[INFO] Pulling latest version of byor-voting-web-app..."
-if [[ ! -d "${BYOR_VOTING_WEB_APP_HOME}" ]]; then
-    git clone https://github.com/thoughtworks/byor-voting-web-app.git
+    cd ${BYOR_VOTING_INFRASTRUCTURE_HOME}/tmp
+    echo "--[INFO] Pulling latest version of byor-voting-web-app..."
+    if [[ ! -d "${BYOR_VOTING_WEB_APP_HOME}" ]]; then
+        git clone https://github.com/thoughtworks/byor-voting-web-app.git
+    fi
+    cd "${BYOR_VOTING_WEB_APP_HOME}"
+    git fetch
+    git pull | tee logs/byor-voting-web-app.log
+else
+    echo "--[INFO] skipping pulling latest changes from github repos..."
 fi
-cd "${BYOR_VOTING_WEB_APP_HOME}"
-git fetch
-git pull | tee logs/byor-voting-web-app.log
 
 cd "${BYOR_VOTING_INFRASTRUCTURE_HOME}"
 
@@ -124,78 +145,134 @@ EOL
     fi
     export AWS_DEFAULT_REGION=${AWS_REGION}
 
-
-    echo "--[INFO] configuring AWS S3 buckets..."
-    echo "--[INFO] Creating AWS buckets..."
-    aws/create_s3_bucket.sh ${AWS_SERVICE_STAGE}--byor
-    aws/create_s3_bucket.sh ${AWS_SERVICE_STAGE}--byor-voting
-    aws/create_s3_bucket.sh ${AWS_SERVICE_STAGE}--byor-voting-web-app
-    echo ""
-    echo "--[INFO] Configuring AWS buckets..."
-    aws/enable_s3_bucket_for_web_hosting.sh ${AWS_SERVICE_STAGE}--byor
-    aws/enable_s3_bucket_for_web_hosting.sh ${AWS_SERVICE_STAGE}--byor-voting-web-app
-    echo ""
-    echo "--[INFO] Creating parameters in AWS Parameter Store..."
-    set +e;
-    mongoDbName=$(aws ssm get-parameter --name "${AWS_SERVICE_STAGE}ByorMongoDbName" 2>&1)
-    mongoUri=$(aws ssm get-parameter --name "${AWS_SERVICE_STAGE}ByorMongoUri" 2>&1)
-    jwtKeyStatus=$(aws ssm get-parameter --name "${AWS_SERVICE_STAGE}ByorJwtKey" 2>&1)
-    set -e;
-    if echo ${mongoDbName} | grep 'ParameterNotFound'; then
-        aws ssm put-parameter --name "${AWS_SERVICE_STAGE}ByorMongoDbName" --type "String" --value ${MONGO_DB_NAME} --overwrite
+    if [ -z $AWS_S3_SETUP ]; then
+        echo "do you want to configure AWS S3?
+1) (y)es
+2) (n)o
+enter either number or name, or press any other character to use the default (yes):"
+        read ans
+        case $ans in
+            n|2       ) export AWS_S3_SETUP=NO ;;
+            y|1|""|* ) export AWS_S3_SETUP=YES ;;
+        esac
     fi
-    if echo ${mongoUri} | grep 'ParameterNotFound'; then
-        aws ssm put-parameter --name "${AWS_SERVICE_STAGE}ByorMongoUri" --type "SecureString" --value ${MONGO_URI} --overwrite
-    fi
-    if echo ${jwtKeyStatus} | grep 'ParameterNotFound'; then
-        echo "--[INFO] no JWT token found, creating a new one..."
-        read -e -p "Please enter the JWT Key (input hidden): " -s inJwtKey;
-        aws ssm put-parameter --name "${AWS_SERVICE_STAGE}ByorJwtKey" --type "SecureString" --value "${inJwtKey}" --tags "Key=initiative,Value=${AWS_SERVICE_STAGE}"
-    fi
-
-
-    echo ""
-    echo "--[INFO]: deploying byor-voting-server..."
-    cd "${BYOR_VOTING_SERVER_HOME}"
-    /bin/bash .make/utils/execute-in-docker.sh -s "byor-voting-server" -o "--no-start"
-    docker cp . $(docker-compose ps -q byor-voting-server):/usr/src/app/
-    make install | tee logs/byor-voting-server-install.log
-    make deploy | tee logs/byor-voting-server-deploy.log
-    if cat ${BYOR_VOTING_SERVER_HOME}/logs/byor-voting-server-deploy.log | grep "exited with code 1"; then
-        echo "--[ERROR]: serverless deployment failed!"
-        exit 1;
-    fi
-    export BACKEND_SERVICE_URL=$(cat ${BYOR_VOTING_SERVER_HOME}/logs/byor-voting-server-deploy.log | grep POST | rev | cut -d' ' -f1 | rev)/
-    if [ -z "${CI}" ]; then
-        awk '// { sub(/^# export BACKEND_SERVICE_URL=.*/,"# export BACKEND_SERVICE_URL="ENVIRON["BACKEND_SERVICE_URL"]); print }' ${CONFIG_FILE} > tmp.tmp && mv tmp.tmp ${CONFIG_FILE}
+    if [ "${AWS_S3_SETUP}" == "YES" ]; then 
+        echo "--[INFO] configuring AWS S3 buckets..."
+        echo "--[INFO] Creating AWS buckets..."
+        aws/create_s3_bucket.sh ${AWS_SERVICE_STAGE}--byor
+        aws/create_s3_bucket.sh ${AWS_SERVICE_STAGE}--byor-voting
+        aws/create_s3_bucket.sh ${AWS_SERVICE_STAGE}--byor-voting-web-app
+        echo ""
+        echo "--[INFO] Configuring AWS buckets..."
+        aws/enable_s3_bucket_for_web_hosting.sh ${AWS_SERVICE_STAGE}--byor
+        aws/enable_s3_bucket_for_web_hosting.sh ${AWS_SERVICE_STAGE}--byor-voting-web-app
+        echo ""
+        echo "--[INFO] Creating parameters in AWS Parameter Store..."
+        set +e;
+        mongoDbName=$(aws ssm get-parameter --name "${AWS_SERVICE_STAGE}ByorMongoDbName" 2>&1)
+        mongoUri=$(aws ssm get-parameter --name "${AWS_SERVICE_STAGE}ByorMongoUri" 2>&1)
+        jwtKeyStatus=$(aws ssm get-parameter --name "${AWS_SERVICE_STAGE}ByorJwtKey" 2>&1)
+        set -e;
+        if echo ${mongoDbName} | grep 'ParameterNotFound'; then
+            aws ssm put-parameter --name "${AWS_SERVICE_STAGE}ByorMongoDbName" --type "String" --value ${MONGO_DB_NAME} --overwrite
+        fi
+        if echo ${mongoUri} | grep 'ParameterNotFound'; then
+            aws ssm put-parameter --name "${AWS_SERVICE_STAGE}ByorMongoUri" --type "SecureString" --value ${MONGO_URI} --overwrite
+        fi
+        if echo ${jwtKeyStatus} | grep 'ParameterNotFound'; then
+            echo "--[INFO] no JWT token found, creating a new one..."
+            read -e -p "Please enter the JWT Key (input hidden): " -s inJwtKey;
+            aws ssm put-parameter --name "${AWS_SERVICE_STAGE}ByorJwtKey" --type "SecureString" --value "${inJwtKey}" --tags "Key=initiative,Value=${AWS_SERVICE_STAGE}"
+        fi
+    else
+        echo "--[INFO] skipping AWS S3 configuration..."
     fi
 
-
-    echo ""
-    echo "--[INFO]: deploying byor..."
-    cd "${BYOR_VOTING_WEB_APP_HOME}"
-    bash .make/cd/deploy_byor_aws.sh ${BYOR_HOME} | tee logs/byor-deploy.log
-    export RADAR_SERVICE_URL=http://${AWS_SERVICE_STAGE}--byor.s3-website-${AWS_REGION}.amazonaws.com/
-    if [ -z "${CI}" ]; then
-        awk '// { sub(/^# export RADAR_SERVICE_URL=.*/,"# export RADAR_SERVICE_URL="ENVIRON["RADAR_SERVICE_URL"]); print }' ${CONFIG_FILE} > tmp.tmp && mv tmp.tmp ${CONFIG_FILE}
+    if [ -z $DEPLOY_BYOR_SERVER ]; then
+        echo "do you want to deploy byor-voting-server?
+1) (y)es
+2) (n)o
+enter either number or name, or press any other character to use the default (yes):"
+        read ans
+        case $ans in
+            n|2       ) export DEPLOY_BYOR_SERVER=NO ;;
+            y|1|""|* ) export DEPLOY_BYOR_SERVER=YES ;;
+        esac
+    fi
+    if [ "${DEPLOY_BYOR_SERVER}" == "YES" ]; then 
+        echo ""
+        echo "--[INFO]: deploying byor-voting-server..."
+        cd "${BYOR_VOTING_SERVER_HOME}"
+        /bin/bash .make/utils/execute-in-docker.sh -s "byor-voting-server" -o "--no-start"
+        docker cp . $(docker-compose ps -q byor-voting-server):/usr/src/app/
+        make install | tee logs/byor-voting-server-install.log
+        make deploy | tee logs/byor-voting-server-deploy.log
+        if cat ${BYOR_VOTING_SERVER_HOME}/logs/byor-voting-server-deploy.log | grep "exited with code 1"; then
+            echo "--[ERROR]: serverless deployment failed!"
+            exit 1;
+        fi
+        export BACKEND_SERVICE_URL=$(cat ${BYOR_VOTING_SERVER_HOME}/logs/byor-voting-server-deploy.log | grep POST | rev | cut -d' ' -f1 | rev)/
+        if [ -z "${CI}" ]; then
+            awk '// { sub(/^# export BACKEND_SERVICE_URL=.*/,"# export BACKEND_SERVICE_URL="ENVIRON["BACKEND_SERVICE_URL"]); print }' ${CONFIG_FILE} > tmp.tmp && mv tmp.tmp ${CONFIG_FILE}
+        fi
+    else
+        echo "--[INFO] skipping byor-voting-server deployment..."
     fi
 
-
-    echo ""
-    echo "--[INFO]: deploying byor-voting-web-app..."
-    echo "--[INFO]: BACKEND_SERVICE_URL=${BACKEND_SERVICE_URL}"
-    echo "--[INFO]: RADAR_SERVICE_URL=${RADAR_SERVICE_URL}"
-    /bin/bash .make/utils/execute-in-docker.sh -s "byor-voting-web-app" -o "--no-start"
-    docker cp . $(docker-compose ps -q byor-voting-web-app):/usr/src/app/
-    make install | tee logs/byor-voting-web-app-install.log
-    make build | tee logs/byor-voting-web-app-build.log
-    make deploy | tee logs/byor-voting-web-app-deploy.log
-    export WEB_APP_URL=http://${AWS_SERVICE_STAGE}--byor-voting-web-app.s3-website-${AWS_REGION}.amazonaws.com/
-    echo "--[INFO]: byor-voting-web-app available at ${WEB_APP_URL}"
-    if [ -z "${CI}" ]; then
-        awk '// { sub(/^# export WEB_APP_URL=.*/,"# export WEB_APP_URL="ENVIRON["WEB_APP_URL"]); print }' ${CONFIG_FILE} > tmp.tmp && mv tmp.tmp ${CONFIG_FILE}
+    if [ -z $DEPLOY_BYOR_RADAR ]; then
+        echo "do you want to deploy byor radar?
+1) (y)es
+2) (n)o
+enter either number or name, or press any other character to use the default (yes):"
+        read ans
+        case $ans in
+            n|2       ) export DEPLOY_BYOR_RADAR=NO ;;
+            y|1|""|* ) export DEPLOY_BYOR_RADAR=YES ;;
+        esac
+    fi
+    if [ "${DEPLOY_BYOR_RADAR}" == "YES" ]; then 
+        echo ""
+        echo "--[INFO]: deploying byor..."
+        cd "${BYOR_VOTING_WEB_APP_HOME}"
+        bash .make/cd/deploy_byor_aws.sh ${BYOR_HOME} | tee logs/byor-deploy.log
+        export RADAR_SERVICE_URL=http://${AWS_SERVICE_STAGE}--byor.s3-website-${AWS_REGION}.amazonaws.com/
+        if [ -z "${CI}" ]; then
+            awk '// { sub(/^# export RADAR_SERVICE_URL=.*/,"# export RADAR_SERVICE_URL="ENVIRON["RADAR_SERVICE_URL"]); print }' ${CONFIG_FILE} > tmp.tmp && mv tmp.tmp ${CONFIG_FILE}
+        fi
+    else
+        echo "--[INFO] skipping byor radar deployment..."
     fi
 
+    if [ -z $DEPLOY_BYOR_VOTING_WEB_APP ]; then
+        echo "do you want to deploy byor radar?
+1) (y)es
+2) (n)o
+enter either number or name, or press any other character to use the default (yes):"
+        read ans
+        case $ans in
+            n|2       ) export DEPLOY_BYOR_VOTING_WEB_APP=NO ;;
+            y|1|""|* ) export DEPLOY_BYOR_VOTING_WEB_APP=YES ;;
+        esac
+    fi
+    if [ "${DEPLOY_BYOR_VOTING_WEB_APP}" == "YES" ]; then 
+        echo ""
+        echo "--[INFO]: deploying byor-voting-web-app..."
+        echo "--[INFO]: BACKEND_SERVICE_URL=${BACKEND_SERVICE_URL}"
+        echo "--[INFO]: RADAR_SERVICE_URL=${RADAR_SERVICE_URL}"
+        cd "${BYOR_VOTING_WEB_APP_HOME}"
+        /bin/bash .make/utils/execute-in-docker.sh -s "byor-voting-web-app" -o "--no-start"
+        docker cp . $(docker-compose ps -q byor-voting-web-app):/usr/src/app/
+        make install | tee logs/byor-voting-web-app-install.log
+        make build | tee logs/byor-voting-web-app-build.log
+        make deploy | tee logs/byor-voting-web-app-deploy.log
+        export WEB_APP_URL=http://${AWS_SERVICE_STAGE}--byor-voting-web-app.s3-website-${AWS_REGION}.amazonaws.com/
+        echo "--[INFO]: byor-voting-web-app available at ${WEB_APP_URL}"
+        if [ -z "${CI}" ]; then
+            awk '// { sub(/^# export WEB_APP_URL=.*/,"# export WEB_APP_URL="ENVIRON["WEB_APP_URL"]); print }' ${CONFIG_FILE} > tmp.tmp && mv tmp.tmp ${CONFIG_FILE}
+        fi
+    else
+        echo "--[INFO] skipping byor-voting-web-app deployment..."
+    fi
 
 ###### performing administrative tasks...
     # cd "${BYOR_VOTING_SERVER_HOME}"
